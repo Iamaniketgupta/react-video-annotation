@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "React Video Annotation is a flexible and user-friendly React package for adding and managing annotations on video frames. With this tool, developers can easily integrate custom annotation features into video content, allowing users to draw, label, and organize shapes such as rectangles, polygons, and points over specific video segments. Ideal for applications in video analysis, review, and collaborative tagging, this package supports dynamic annotation editing, playback tracking, and a fully customizable UI to meet diverse annotation needs.",
   "main": "index.js",
+  "type": "module",
+  "private": true,
+
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write ."
@@ -15,8 +18,8 @@
     "react-video-annotation",
     "video-annotations"
   ],
-  "author": "Suraj and Aniket",
-  "license": "ISC",
+  "author": "Suraj and Aniket Gupta",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Iamaniketgupta/react-video-annotation/issues"
   },
