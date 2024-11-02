@@ -5,7 +5,6 @@
   "main": "index.js",
   "type": "module",
   "private": true,
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write ."
@@ -26,5 +25,13 @@
   "homepage": "https://github.com/Iamaniketgupta/react-video-annotation#readme",
   "devDependencies": {
     "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "konva": "^9.3.16",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "react-konva": "^18.2.10",
+    "react-router-dom": "^6.27.0"
   }
 }
