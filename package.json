@@ -1,37 +1,30 @@
 {
   "name": "react-video-annotation",
-  "version": "1.0.0",
-  "description": "React Video Annotation is a flexible and user-friendly React package for adding and managing annotations on video frames. With this tool, developers can easily integrate custom annotation features into video content, allowing users to draw, label, and organize shapes such as rectangles, polygons, and points over specific video segments. Ideal for applications in video analysis, review, and collaborative tagging, this package supports dynamic annotation editing, playback tracking, and a fully customizable UI to meet diverse annotation needs.",
-  "main": "index.js",
-  "type": "module",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Iamaniketgupta/react-video-annotation.git"
-  },
-  "keywords": [
-    "react-video-annotation",
-    "video-annotations"
-  ],
-  "author": "Suraj and Aniket Gupta",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Iamaniketgupta/react-video-annotation/issues"
-  },
-  "homepage": "https://github.com/Iamaniketgupta/react-video-annotation#readme",
-  "devDependencies": {
-    "prettier": "^3.3.3"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "konva": "^9.3.16",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
     "react-konva": "^18.2.10",
-    "react-router-dom": "^6.27.0"
+    "react-video-annotation": "file:"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.11.0",
+    "vite": "^5.4.10"
   }
 }
