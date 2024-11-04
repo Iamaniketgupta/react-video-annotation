@@ -188,6 +188,7 @@ const ReactPlayer = () => {
   const [stageSize, setStageSize] = useState({ width: '100%', height: '100%' });
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
   const [wid, setWid] = useState(640);
+  const [isFullScreen, setIsFullScreen] = useState(false)
 
   const wrapperRef = useRef(null);
   const [wrapperSize, setWrapperSize] = useState({ width: 0, height: 0 });
