@@ -9,7 +9,7 @@ export default function usePlayer() {
     */
     const getCurrentTime = () => {
         if (playerRef.current) {
-            const currentTimeInMs = Math.floor(playerRef.current.currentTime * 1000);
+            const currentTimeInMs = Math.floor(playerRef.current?.currentTime * 1000);
             console.log(currentTimeInMs);
             return currentTimeInMs;
         }

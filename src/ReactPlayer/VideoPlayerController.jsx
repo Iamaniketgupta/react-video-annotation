@@ -95,7 +95,7 @@ const VideoController = ({ playerRef , setwid }) => {
           fontSize: "16px",
         }}
       >
-        {playing ? "Pause" : "Play"}
+        {playing ? "⏸️" : "▶️"}
       </button>
       <input
         type="range"
@@ -104,7 +104,8 @@ const VideoController = ({ playerRef , setwid }) => {
         step={0.01}
         value={played}
         onChange={handleSeekChange}
-        style={{ flexGrow: 1 }}
+        style={{ flexGrow: 1 
+      }}
       />
       <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
       <select onChange={handleSpeedChange} value={playbackRate}>

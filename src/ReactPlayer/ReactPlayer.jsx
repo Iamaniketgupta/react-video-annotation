@@ -189,6 +189,11 @@ const ReactPlayer = () => {
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
   const [wid, setWid] = useState(640);
 
+  const wrapperRef = useRef(null);
+  const [wrapperSize, setWrapperSize] = useState({ width: 0, height: 0 });
+
+ 
+
   // Handle window resizing to maintain video aspect ratio
   useEffect(() => {
     const handleResize = () => {
@@ -207,11 +212,31 @@ const ReactPlayer = () => {
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
+    document.getElementById("main-container").addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      document.getElementById("main-container").removeEventListener('resize', handleResize);
     };
   }, [wid]);
+
+  console.log({scale})
+  
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+      if (document.fullscreenElement) {
+        setWid(window.innerWidth); // Update width to full window width
+      } else {
+        setWid(640); // Reset to default width
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
 
   return (
     <div
@@ -224,6 +249,7 @@ const ReactPlayer = () => {
         overflow: 'hidden',
       }}
       id="main-container"
+      ref={wrapperSize}
     >
       {/* Video player for playback */}
       <video
@@ -240,10 +266,15 @@ const ReactPlayer = () => {
           objectFit: 'contain',
         }}
       />
+
+
       {/* Canvas component for annotations */}
       <div style={{position:"absolute" ,top:0,left:0,width:"100%",height:"100%",  zIndex:2 }} >
-      <Canvas getCurrentTime={getCurrentTime} />
+      <Canvas getCurrentTime={getCurrentTime} videoRef={playerRef} wrapperSize={wrapperSize} scale={scale} />
       </div>
+
+
+
       {/* Video controls */}
       <div
         id="video-controller"

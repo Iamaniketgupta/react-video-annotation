@@ -9,9 +9,8 @@ function App() {
 
   return (
     <>
-    {/* <ReactPlayer/> */}
+    <ReactPlayer/>
   
-    <Canvas/>
     </>
   )
 }

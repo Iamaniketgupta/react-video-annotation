@@ -207,24 +207,56 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Stage, Layer, Rect, Label, Tag, Text, Transformer } from 'react-konva';
 import { FaTimes } from 'react-icons/fa';
 
-function Canvas({ getCurrentTime }) {
+
+
+
+const Rectangle = ({ x, y, width, height, color="red", scaleX, scaleY }) => (
+  <Rect
+    x={x * scaleX}
+    y={y * scaleY}
+    width={width * scaleX}
+    height={height * scaleY}
+    shadowBlur={5}
+    stroke={color}
+    strokeWidth='4'
+  />
+);
+
+const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
+  <Circle
+    x={x * scaleX}
+    y={y * scaleY}
+    radius={radius * Math.min(scaleX, scaleY)}
+    fill={color}
+    shadowBlur={5}
+  />
+);
+
+
+function Canvas({ getCurrentTime , videoRef , scale }) {
   const [shapes, setShapes] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [newShape, setNewShape] = useState(null);
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(null);
   const [hoveredShapeIndex, setHoveredShapeIndex] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentTime, setCurrentTime] = useState(getCurrentTime)
   const shapeRef = useRef([]);
   const transformerRef = useRef();
+
+  
 
   const handleMouseDown = useCallback((e) => {
     const stage = e.target.getStage();
     const { x, y } = stage.getPointerPosition();
-    const startTime = getCurrentTime();
-    setNewShape({ type: 'rectangle', x, y, width: 0, height: 0, startTime, endTime: startTime + 500 });
+    const startTime = currentTime;
+    console.log({startTime})
+    console.log({shapes})
+    setNewShape({ type: 'rectangle', x, y, width: 0, height: 0, startTime, endTime: startTime + 2 });
     setIsDrawing(true);
-  }, [getCurrentTime]);
+  }, [currentTime]);
 
+  
   const handleMouseMove = useCallback((e) => {
     if (!isDrawing || !newShape) return;
     const stage = e.target.getStage();
@@ -259,6 +291,8 @@ function Canvas({ getCurrentTime }) {
     setIsDragging(false);
   }, []);
 
+  
+
   useEffect(() => {
     if (selectedShapeIndex !== null) {
       const shape = shapeRef.current[selectedShapeIndex];
@@ -271,6 +305,21 @@ function Canvas({ getCurrentTime }) {
     }
   }, [selectedShapeIndex]);
 
+  
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(videoRef.current.currentTime);
+    };
+
+    const video = videoRef.current;
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, []);
+
+  
  
   return (
     <Stage
@@ -282,46 +331,18 @@ function Canvas({ getCurrentTime }) {
       onMouseUp={handleMouseUp}
     >
       <Layer>
-        {shapes.map((shape, i) => (
-          shape.visible && (
-            <React.Fragment key={i}>
-              <Rect
-                ref={(el) => (shapeRef.current[i] = el)}
-                x={shape.x}
-                y={shape.y}
-                width={shape.width}
-                height={shape.height}
-                fill="rgba(0, 128, 0, 0.1)"
-                stroke="rgba(0, 128, 0, 0.3)"
-                draggable
-                onClick={() => handleSelectShape(i)}
-                onMouseEnter={() => setHoveredShapeIndex(i)}
-                onMouseLeave={() => setHoveredShapeIndex(null)}
-                onDragEnd={(e) => handleDragEnd(e, i)}
-              />
-              {((selectedShapeIndex === i || hoveredShapeIndex === i) && !isDragging) && (
-                <Label x={shape.x + shape.width / 2} y={shape.y - 2} opacity={0.9}>
-                  <Tag fill="black" pointerDirection="down" pointerWidth={8} pointerHeight={8} lineJoin="round" />
-                  <Text text={`Shape ${i + 1}`} fontFamily="Calibri" fontSize={10} padding={4} fill="white" />
-                </Label>
-              )}
-              {selectedShapeIndex === i && (
-                <FaTimes
-                  className="absolute cursor-pointer text-red-500"
-                  style={{
-                    left: shape.x + shape.width - 10,
-                    top: shape.y - 10,
-                    zIndex: 10,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteShape(i);
-                  }}
-                />
-              )}
-            </React.Fragment>
-          )
-        ))}
+      {shapes
+        .filter(annotation => currentTime >= annotation.startTime && currentTime <= annotation.endTime)
+        .map((annotation, index) => {
+          switch (annotation.type) {
+            case 'rectangle':
+              return <Rectangle key={index} {...annotation} scaleX={scale.scaleX} scaleY={scale.scaleY} />;
+            case 'circle':
+              return <CircleShape key={index} {...annotation} {...annotation} scaleX={scale.scaleX} scaleY={scale.scaleY} />;
+            default:
+              return null;
+          }
+        })}
         {newShape && (
           <Rect
             x={newShape.x}
