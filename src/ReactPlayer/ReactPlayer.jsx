@@ -246,15 +246,7 @@ const ReactPlayer = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: `${wid}px`,
-        maxWidth: "800px",
-        overflow: "hidden",
-        height: `${document.getElementById("main-container")?.height + 20}px`,
-      }}
-    >
+    
       <div
         style={{
           position: "relative",
@@ -301,7 +293,7 @@ const ReactPlayer = () => {
           />
         </div>
 
-        {isFullScreen && (
+
           <div
             style={{
               position: "absolute",
@@ -313,19 +305,10 @@ const ReactPlayer = () => {
           >
             <TransparentVideoController playerRef={playerRef} />
           </div>
-        )}
+          
       </div>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "0",
-          right: "17px",
-          width: "100%",
-        }}
-      >
-        <VideoController playerRef={playerRef}></VideoController>
-      </div>
-    </div>
+      
+      
   );
 };
 
