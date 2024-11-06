@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import useVideoController from "./UseVideoPlayerControllerHook";
+import usePlayer from "../hooks/Player";
 
-const TransparentVideoController = ({ playerRef }) => {
+const TransparentVideoController = ({playerRef}) => {
+  // const {playerRef} = usePlayer();
   const {
     playing,
     played,
@@ -13,6 +15,7 @@ const TransparentVideoController = ({ playerRef }) => {
     handleSpeedChange,
     handleFullScreen,
     formatTime,
+    
   } = useVideoController(playerRef);
 
   const [controlsVisible, setControlsVisible] = useState(true);
@@ -63,17 +66,19 @@ const TransparentVideoController = ({ playerRef }) => {
       clearTimeout(hideTimeout?.current);
     };
   }, [playerRef]);
+ 
 
   return (
     <div
       style={{
         position: "absolute",
         bottom: "0",
+        height: "20px",
         width: "100%",
         background: "rgba(0, 0, 0, 0.4)",
         display: "flex",
         alignItems: "center",
-        padding: "10px 15px",
+        padding: "10px 12px",
         color: "#fff",
         transition: "opacity 0.5s",
         opacity: controlsVisible ? 1 : 0,
@@ -118,10 +123,12 @@ const TransparentVideoController = ({ playerRef }) => {
         style={{
           background: "rgba(0,0,0, 0.9)",
           color: "#fff",
+          // background: "transparent",
           border: "none",
+          outline: "none",
           padding: "5px",
           cursor: "pointer",
-          fontSize: "14px",
+          fontSize: "10px",
           marginRight: "10px",
         }}
       >
