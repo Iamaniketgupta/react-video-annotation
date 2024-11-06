@@ -6,11 +6,12 @@ const useVideoController = (playerRef) => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
 
   useEffect(() => {
     const player = playerRef?.current;
     if (player) {
-      // Set duration when metadata is loaded
       const handleLoadedMetadata = () => {
         if (player.duration) {
           setDuration(player.duration);
@@ -68,8 +69,13 @@ const useVideoController = (playerRef) => {
     if (parentElement) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
+        setIsFullScreen(false);
       } else {
-        parentElement.requestFullscreen().catch((err) => {
+        parentElement.requestFullscreen()
+        .then(() => {
+          setIsFullScreen(true);
+        })
+        .catch((err) => {
           console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         });
       }
@@ -93,6 +99,7 @@ const useVideoController = (playerRef) => {
     handleSpeedChange,
     handleFullScreen,
     formatTime,
+    isFullScreen
   };
 };
 

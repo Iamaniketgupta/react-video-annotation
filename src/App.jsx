@@ -1,9 +1,6 @@
-import { useState } from 'react'
 
 import './App.css'
-
-import Canvas from './components/Canvas'
-import ReactPlayer from './ReactPlayer/ReactPlayer'
+import ReactPlayer from './VideoAnnotationPlayer/ReactPlayer'
 
 function App() {
 
