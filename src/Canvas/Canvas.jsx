@@ -104,6 +104,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleMouseDown = useCallback(
     (e) => {
+      if(isFullScreen) return;
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
       const startTime = currentTime;
@@ -134,6 +135,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleMouseMove = useCallback(
     (e) => {
+      if(isFullScreen) return;
       if (!isDrawing || !newShape) return;
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
@@ -153,16 +155,10 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The mouse event object.
    */
   const handleMouseUp = useCallback(() => {
-    // if (newShape) setShapes((prevShapes) => [...prevShapes, newShape]);
-    // setIsDrawing(false);
-    // setNewShape(null);
-    if (newShape) {
-      setHistory((prevHistory) => [...prevHistory, shapes]);
-      setRedoStack([]);
-      setShapes((prevShapes) => [...prevShapes, newShape]);
-      setIsDrawing(false);
-      setNewShape(null);
-    }
+    if(isFullScreen) return;
+    if (newShape) setShapes((prevShapes) => [...prevShapes, newShape]);
+    setIsDrawing(false);
+    setNewShape(null);
   }, [newShape]);
 
   /**
@@ -172,6 +168,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The click event object.
    */
   const handleSelectShape = useCallback((shapeId, e) => {
+    if(isFullScreen)return;
     e.cancelBubble = true;
     setSelectedShapeId(shapeId);
   }, []);
@@ -182,6 +179,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The click event object.
    */
   const handleStageClick = (e) => {
+    if(isFullScreen) return;
+    
     if (e.target === e.target.getStage()) {
       setSelectedShapeId(null);
     }
@@ -346,10 +345,11 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       width={window.innerWidth}
       height={window.innerHeight}
       style={{ position: "absolute", top: 0, left: 0 }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onClick={(e) => handleStageClick(e)}
+      onMouseDown={!isFullScreen ? handleMouseDown : null}
+      onMouseMove={!isFullScreen ? handleMouseMove : null}
+      onMouseUp={!isFullScreen ? handleMouseUp : null}
+      onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
+      
     >
       <Layer>
         {shapes
@@ -369,7 +369,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
                 draggable={!isFullScreen}
-                onClick={(e) => handleSelectShape(shape.id, e)}
+                onClick={!isFullScreen ? (e) => handleSelectShape(shape.id, e):null}
                 onDragEnd={(e) => handleDragEnd(e, shape.id)}
                 onDragStart={handleDragStart}
                 onTransformEnd={(e) => handleTransformEnd(e, shape.id)}
