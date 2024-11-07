@@ -95,7 +95,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
-  
+
 
   /**
    * Handle mouse down event to start drawing a new shape.
@@ -192,9 +192,9 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {string} shapeId - The ID of the shape to delete.
    */
-  const handleDeleteShape = useCallback((shapeId) => {
+  const handleDeleteShape = useCallback(() => {
     setShapes((prevShapes) =>
-      prevShapes.filter((shape) => shape.id !== shapeId)
+      prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
     setSelectedShapeId(null);
   }, []);
@@ -236,9 +236,9 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       const node = e.target;
       const { x, y, width, height } = node.attrs;
 
-        // Save the current state before modifying
-    setHistory((prevHistory) => [...prevHistory, shapes]);
-    setRedoStack([]); // Clear redo stack after a new action
+      // Save the current state before modifying
+      setHistory((prevHistory) => [...prevHistory, shapes]);
+      setRedoStack([]); // Clear redo stack after a new action
 
 
       if (!isFullScreen) {
@@ -246,15 +246,15 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
           prevShapes.map((shape) =>
             shape.id === shapeId
               ? {
-                  ...shape,
-                  properties: {
-                    ...shape.properties,
-                    x: x / scale.scaleX,
-                    y: y / scale.scaleY,
-                    width: width / scale.scaleX,
-                    height: height / scale.scaleY,
-                  },
-                }
+                ...shape,
+                properties: {
+                  ...shape.properties,
+                  x: x / scale.scaleX,
+                  y: y / scale.scaleY,
+                  width: width / scale.scaleX,
+                  height: height / scale.scaleY,
+                },
+              }
               : shape
           )
         );
@@ -264,30 +264,31 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   );
 
 
+
   /**
    * Handle UNDO.
    */
-const handleUndo = useCallback(() => {
-  if (history.length > 0) {
-    const lastState = history[history.length - 1];
-    setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
-    setShapes(lastState);
-    setHistory((prevHistory) => prevHistory.slice(0, -1));
-  }
-}, [history, shapes]);
+  const handleUndo = useCallback(() => {
+    if (history.length > 0) {
+      const lastState = history[history.length - 1];
+      setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
+      setShapes(lastState);
+      setHistory((prevHistory) => prevHistory.slice(0, -1));
+    }
+  }, [history, shapes]);
 
 
   /**
    * Handle REDO.
    */
-const handleRedo = useCallback(() => {
-  if (redoStack.length > 0) {
-    const nextState = redoStack[0];
-    setHistory((prevHistory) => [...prevHistory, shapes]);
-    setShapes(nextState);
-    setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
-  }
-}, [redoStack, shapes]);
+  const handleRedo = useCallback(() => {
+    if (redoStack.length > 0) {
+      const nextState = redoStack[0];
+      setHistory((prevHistory) => [...prevHistory, shapes]);
+      setShapes(nextState);
+      setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
+    }
+  }, [redoStack, shapes]);
 
 
 
@@ -295,21 +296,24 @@ const handleRedo = useCallback(() => {
    * UNDO/REDO shortcut key events
    */
 
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-      handleUndo();
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-      handleRedo();
-    }
-  };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        handleUndo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        handleRedo();
+      }
+      if (e.key === 'Delete') {
+        handleDeleteShape()
+      }
+    };
 
-  window.addEventListener('keydown', handleKeyDown);
-  return () => {
-    window.removeEventListener('keydown', handleKeyDown);
-  };
-}, [handleUndo, handleRedo]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleUndo, handleRedo, handleDeleteShape]);
 
 
 
@@ -393,6 +397,9 @@ useEffect(() => {
           ref={transformerRef}
           keepRatio={false}
           rotateEnabled={false}
+          anchorSize={7}
+          anchorCornerRadius={10}
+
         />
       </Layer>
     </Stage>
