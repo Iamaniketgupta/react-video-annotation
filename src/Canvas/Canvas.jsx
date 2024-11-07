@@ -92,6 +92,11 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   const transformerRef = useRef(); // Reference for the transformer
   const stageRef = useRef(null); // Stage reference for the Konva stage
 
+  // STACK STATES
+  const [history, setHistory] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  
+
   /**
    * Handle mouse down event to start drawing a new shape.
    *
@@ -148,9 +153,16 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The mouse event object.
    */
   const handleMouseUp = useCallback(() => {
-    if (newShape) setShapes((prevShapes) => [...prevShapes, newShape]);
-    setIsDrawing(false);
-    setNewShape(null);
+    // if (newShape) setShapes((prevShapes) => [...prevShapes, newShape]);
+    // setIsDrawing(false);
+    // setNewShape(null);
+    if (newShape) {
+      setHistory((prevHistory) => [...prevHistory, shapes]);
+      setRedoStack([]);
+      setShapes((prevShapes) => [...prevShapes, newShape]);
+      setIsDrawing(false);
+      setNewShape(null);
+    }
   }, [newShape]);
 
   /**
@@ -223,6 +235,12 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     (e, shapeId) => {
       const node = e.target;
       const { x, y, width, height } = node.attrs;
+
+        // Save the current state before modifying
+    setHistory((prevHistory) => [...prevHistory, shapes]);
+    setRedoStack([]); // Clear redo stack after a new action
+
+
       if (!isFullScreen) {
         setShapes((prevShapes) =>
           prevShapes.map((shape) =>
@@ -244,6 +262,56 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     },
     [scale, isFullScreen]
   );
+
+
+  /**
+   * Handle UNDO.
+   */
+const handleUndo = useCallback(() => {
+  if (history.length > 0) {
+    const lastState = history[history.length - 1];
+    setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
+    setShapes(lastState);
+    setHistory((prevHistory) => prevHistory.slice(0, -1));
+  }
+}, [history, shapes]);
+
+
+  /**
+   * Handle REDO.
+   */
+const handleRedo = useCallback(() => {
+  if (redoStack.length > 0) {
+    const nextState = redoStack[0];
+    setHistory((prevHistory) => [...prevHistory, shapes]);
+    setShapes(nextState);
+    setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
+  }
+}, [redoStack, shapes]);
+
+
+
+  /**
+   * UNDO/REDO shortcut key events
+   */
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      handleUndo();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+      handleRedo();
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+  return () => {
+    window.removeEventListener('keydown', handleKeyDown);
+  };
+}, [handleUndo, handleRedo]);
+
+
 
   /**
    * Synchronize the transformer with the selected shape when the selected shape changes.
