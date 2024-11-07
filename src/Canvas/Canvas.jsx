@@ -192,11 +192,12 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {string} shapeId - The ID of the shape to delete.
    */
   const handleDeleteShape = useCallback(() => {
+    console.log(selectedShapeId)
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
     setSelectedShapeId(null);
-  }, []);
+  }, [selectedShapeId]);
 
   /**
    * Handle drag start event to change the cursor style.
@@ -230,6 +231,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The event object.
    * @param {string} shapeId - The ID of the shape being transformed.
    */
+
+  
   const handleTransformEnd = useCallback(
     (e, shapeId) => {
       const node = e.target;
