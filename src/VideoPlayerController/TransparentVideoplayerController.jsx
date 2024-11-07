@@ -30,9 +30,9 @@ const TransparentVideoController = ({playerRef}) => {
       if (container) {
         const { left, right, top } = container.getBoundingClientRect();
         
-        // Check if mouse is near the boundary
+        
         if (
-          event.clientX <= left + buffer - 10 ||
+          event.clientX <= left + buffer - 10 || // -10 is just a fudge factor
           event.clientX >= right - buffer ||
           event.clientY <= top + buffer
         ) {
