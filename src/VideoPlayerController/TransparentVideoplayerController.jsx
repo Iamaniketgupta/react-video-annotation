@@ -28,14 +28,13 @@ const TransparentVideoController = ({playerRef}) => {
       const container = playerRef.current;
       const buffer = 10; // Distance from the edge in pixels
       if (container) {
-        const { left, right, top, bottom } = container.getBoundingClientRect();
+        const { left, right, top } = container.getBoundingClientRect();
         
         // Check if mouse is near the boundary
         if (
-          event.clientX <= left + buffer ||
+          event.clientX <= left + buffer - 10 ||
           event.clientX >= right - buffer ||
-          event.clientY <= top + buffer ||
-          event.clientY >= bottom - buffer
+          event.clientY <= top + buffer
         ) {
           setControlsVisible(false);
           return;

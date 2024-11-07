@@ -1,6 +1,6 @@
 import React from 'react';
 import { VideoProvider } from './VideoPlayerContext';
-import ReactPlayer from '../ReactPlayer/ReactPlayer';
+import ReactPlayer from '../VideoAnnotationPlayer/ReactPlayer';
 
 const TwoDVideoAnnotation = ({
   videoUrl,
@@ -11,17 +11,19 @@ const TwoDVideoAnnotation = ({
   onSubmit, 
   data,
   setData, 
+  annotationColor
 }) => {
   return (
     <VideoProvider
       initialVideoUrl={videoUrl}
-      initialShape={shape}
-      initialHideAnnotations={hideAnnotations}
+      shape={shape}
+      hideAnnotations={hideAnnotations}
       initialVideoWidth={videoWidth}
-      initialLockEdit={lockEdit}
+      lockEdit={lockEdit}
       initialData={data}
       externalSetData={setData} 
-      externalOnSubmit={onSubmit} 
+      externalOnSubmit={onSubmit}
+      annotationColor={annotationColor} 
     >
       
       <ReactPlayer url={videoUrl} width={videoWidth} />

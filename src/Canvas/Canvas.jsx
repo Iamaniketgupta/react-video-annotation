@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
 import generateId from "../utils/generateId";
+import { useVideoContext } from "../app/VideoPlayerContext";
 
 /**
  * Rectangle component renders a rectangle shape on the canvas.
@@ -91,7 +92,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   const shapeRef = useRef({}); // Reference for each shape
   const transformerRef = useRef(); // Reference for the transformer
   const stageRef = useRef(null); // Stage reference for the Konva stage
-
+  const {annotationColor , lockEdit , hideAnnotations} = useVideoContext()
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -168,7 +169,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The click event object.
    */
   const handleSelectShape = useCallback((shapeId, e) => {
-    if(isFullScreen)return;
     e.cancelBubble = true;
     setSelectedShapeId(shapeId);
   }, []);
@@ -239,7 +239,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       setHistory((prevHistory) => [...prevHistory, shapes]);
       setRedoStack([]); // Clear redo stack after a new action
 
-
       if (!isFullScreen) {
         setShapes((prevShapes) =>
           prevShapes.map((shape) =>
@@ -262,6 +261,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     [scale, isFullScreen]
   );
 
+
+  console.log({shapes})
 
 
   /**
@@ -339,16 +340,25 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     return () => video?.removeEventListener("timeupdate", handleTimeUpdate);
   }, [videoRef]);
 
+
+  
+  useEffect(() => {
+    if(!videoRef?.current?.paused || lockEdit){
+      setSelectedShapeId(null)
+    }
+  }, [videoRef?.current?.paused , lockEdit]);
+
   return (
     <Stage
       ref={stageRef}
       width={window.innerWidth}
       height={window.innerHeight}
-      style={{ position: "absolute", top: 0, left: 0 }}
-      onMouseDown={!isFullScreen ? handleMouseDown : null}
-      onMouseMove={!isFullScreen ? handleMouseMove : null}
-      onMouseUp={!isFullScreen ? handleMouseUp : null}
+      style={{ position: "absolute", top: 0, left: 0 , display: hideAnnotations ? "none" :"block"}}
+      onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
+      onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
+      onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
       onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
+      
       
     >
       <Layer>
@@ -368,11 +378,12 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
-                draggable={!isFullScreen}
-                onClick={!isFullScreen ? (e) => handleSelectShape(shape.id, e):null}
-                onDragEnd={(e) => handleDragEnd(e, shape.id)}
-                onDragStart={handleDragStart}
-                onTransformEnd={(e) => handleTransformEnd(e, shape.id)}
+                draggable={!isFullScreen && !lockEdit}
+                onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e):null}
+                onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
+                onDragStart={ selectedShapeId ?  handleDragStart : null}
+                onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
+                color={annotationColor}
               />
             ) : (
               <CircleShape
@@ -380,6 +391,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
+                color={annotationColor}
               />
             )
           )}

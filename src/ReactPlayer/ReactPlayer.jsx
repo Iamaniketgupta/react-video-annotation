@@ -182,7 +182,7 @@ import Canvas from "../components/Canvas";
 import usePlayer from "../hooks/Player";
 import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
 
-const ReactPlayer = ({url , width=1080}) => {
+const ReactPlayer = ({url="hai" , width=1080}) => {
   const { playerRef, getCurrentTime } = usePlayer();
   const [stageSize, setStageSize] = useState({ width: "100%", height: "100%" });
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });

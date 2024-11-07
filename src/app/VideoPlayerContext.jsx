@@ -6,20 +6,17 @@ const VideoContext = createContext();
 
 export const VideoProvider = ({ 
   children, 
-  initialVideoUrl = '', 
-  initialShape = null, 
-  initialHideAnnotations = false, 
+  videoUrl = '', 
+  shape = null, 
+  hideAnnotations = false, 
   initialVideoWidth = 640, 
-  initialLockEdit = false, 
+  lockEdit = false, 
   initialData = null,
   externalSetData = null,
-  externalOnSubmit = null, 
+  externalOnSubmit = null,
+  annotationColor = "red"
 }) => {
-  const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
-  const [shape, setShape] = useState(initialShape);
-  const [hideAnnotations, setHideAnnotations] = useState(initialHideAnnotations);
   const [videoWidth, setVideoWidth] = useState(initialVideoWidth);
-  const [lockEdit, setLockEdit] = useState(initialLockEdit);
   const [data, internalSetData] = useState(initialData);
 
   
@@ -34,18 +31,15 @@ export const VideoProvider = ({
     <VideoContext.Provider
       value={{
         videoUrl,
-        setVideoUrl,
         shape,
-        setShape,
         hideAnnotations,
-        setHideAnnotations,
         videoWidth,
         setVideoWidth,
         lockEdit,
-        setLockEdit,
         onSubmit,
         data,
         setData,
+        annotationColor
       }}
     >
       {children}
