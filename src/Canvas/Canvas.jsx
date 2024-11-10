@@ -112,7 +112,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
-        color: "re
+        color: "red",
         label: "",
         data: {},
         properties: {
@@ -127,7 +127,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       });
       setIsDrawing(true);
     },
-    [currentTime]
+    [currentTime, isFullScreen]
   );
 
   /**
@@ -148,7 +148,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
         properties: { ...newShape.properties, width, height },
       });
     },
-    [isDrawing, newShape]
+    [isDrawing, isFullScreen, newShape]
   );
 
   /**
@@ -351,7 +351,7 @@ const handleRedo = useCallback(() => {
     if(!videoRef?.current?.paused || lockEdit){
       setSelectedShapeId(null)
     }
-  }, [videoRef?.current?.paused , lockEdit]);
+  }, [videoRef.current.paused, lockEdit, videoRef]);
 
   return (
     <Stage
