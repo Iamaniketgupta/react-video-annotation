@@ -1,21 +1,19 @@
-import React, { useRef, useState, useEffect } from "react";
-import VideoController from "../VideoPlayerController/VideoPlayerController";
+import React, {  useState, useEffect } from "react";
 import Canvas from "../Canvas/Canvas";
 import usePlayer from "../hooks/Player";
 import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
 
-const ReactPlayer = () => {
+const ReactPlayer = ({ url, width }) => {
   const { playerRef, getCurrentTime } = usePlayer();
-  
+
   const [stageSize, setStageSize] = useState({ width: "100%", height: "100%" });
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
-  const [wid, setWid] = useState(640);
+  const [wid, setWid] = useState(width || 640);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const wrapperRef = useRef(null);
   const [wrapperSize, setWrapperSize] = useState({ width: 0, height: 0 });
 
-  // Handle window resizing to maintain video aspect ratio
+  
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = playerRef.current
@@ -47,16 +45,14 @@ const ReactPlayer = () => {
     };
   }, [wid]);
 
-  console.log({ scale });
-
-  // Handle fullscreen changes
+  
   useEffect(() => {
     const handleFullScreenChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
       if (document.fullscreenElement) {
-        setWid(window.innerWidth); // Update width to full window width
+        setWid(window.innerWidth); 
       } else {
-        setWid(640); // Reset to default width
+        setWid(640); 
       }
     };
 
@@ -66,72 +62,69 @@ const ReactPlayer = () => {
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
   }, []);
-console.log({isFullScreen})
+
+
+  console.log({ isFullScreen });
   return (
-   
+    <div
+      style={{
+        position: "relative",
+        width: `${wid}px`,
+        height: "auto",
+        maxWidth: "800px",
+        aspectRatio: "16/9",
+        overflow: "hidden",
+      }}
+      id="main-container"
+      ref={wrapperSize}
+    >
+      {/* Video player for playback */}
+      <video
+        ref={playerRef}
+        src={url || "x.mp4"}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 1,
+          objectFit: "contain",
+        }}
+      />
+
+      {/* Canvas component for annotations */}
       <div
         style={{
-          position: "relative",
-          width: `${wid}px`,
-          height: "auto",
-          maxWidth: "800px",
-          aspectRatio: "16/9",
-          overflow: "hidden",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 2,
         }}
-        id="main-container"
-        ref={wrapperSize}
       >
-        {/* Video player for playback */}
-        <video
-          ref={playerRef}
-          src="x.mp4"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 1,
-            objectFit: "contain",
-          }}
-        />
-
-        {/* Canvas component for annotations */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 2,
-          }}
-        >
-          <Canvas
+        <Canvas
           isFullScreen={isFullScreen}
-            getCurrentTime={getCurrentTime}
-            videoRef={playerRef}
-            wrapperSize={wrapperSize}
-            scale={scale}
-          />
-        </div>
-        
-          <div
-            style={{
-              position: "absolute",
-              bottom: "10px",
-              right: "17px",
-              width: "100%",
-              zIndex: 3,
-            }}
-          >
-            <TransparentVideoController playerRef={playerRef} />
-          </div>
-
-        
+          getCurrentTime={getCurrentTime}
+          videoRef={playerRef}
+          wrapperSize={wrapperSize}
+          scale={scale}
+        />
       </div>
-     
-   
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          right: "17px",
+          width: "100%",
+          zIndex: 3,
+        }}
+      >
+        <TransparentVideoController playerRef={playerRef} />
+      </div>
+    </div>
   );
 };
 

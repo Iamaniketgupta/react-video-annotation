@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
 import generateId from "../utils/generateId";
+import { useVideoContext } from "../app/VideoPlayerContext";
 
 /**
  * Rectangle component renders a rectangle shape on the canvas.
@@ -92,7 +93,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   const shapeRef = useRef({}); // Reference for each shape
   const transformerRef = useRef(); // Reference for the transformer
   const stageRef = useRef(null); // Stage reference for the Konva stage
-
+  const {annotationColor , lockEdit , hideAnnotations} = useVideoContext()
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -105,6 +106,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleMouseDown = useCallback(
     (e) => {
+      if(isFullScreen) return;
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
       const startTime = currentTime;
@@ -135,6 +137,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleMouseMove = useCallback(
     (e) => {
+      if(isFullScreen) return;
       if (!isDrawing || !newShape) return;
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
@@ -164,6 +167,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     }
   }, [newShape, shapes]);
 
+  
   /**
    * Handle shape selection by setting the selected shape's ID.
    *
@@ -181,6 +185,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The click event object.
    */
   const handleStageClick = (e) => {
+    if(isFullScreen) return;
+    
     if (e.target === e.target.getStage()) {
       setSelectedShapeId(null);
     }
@@ -242,7 +248,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       setHistory((prevHistory) => [...prevHistory, shapes]);
       setRedoStack([]); // Clear redo stack after a new action
 
-
       if (!isFullScreen) {
         setShapes((prevShapes) =>
           prevShapes.map((shape) =>
@@ -266,33 +271,31 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   );
 
 
-
-  /**
+  
+/**
    * Handle UNDO.
    */
-  const handleUndo = useCallback(() => {
-    if (history.length > 0) {
-      const lastState = history[history.length - 1];
-      setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
-      setShapes(lastState);
-      setHistory((prevHistory) => prevHistory.slice(0, -1));
-    }
-  }, [history, shapes]);
+const handleUndo = useCallback(() => {
+  if (history.length > 0) {
+    const lastState = history[history.length - 1];
+    setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
+    setShapes(lastState);
+    setHistory((prevHistory) => prevHistory.slice(0, -1));
+  }
+}, [history, shapes]);
 
 
-  /**
-   * Handle REDO.
-   */
-  const handleRedo = useCallback(() => {
-    if (redoStack.length > 0) {
-      const nextState = redoStack[0];
-      setHistory((prevHistory) => [...prevHistory, shapes]);
-      setShapes(nextState);
-      setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
-    }
-  }, [redoStack, shapes]);
-
-
+/**
+ * Handle REDO.
+ */
+const handleRedo = useCallback(() => {
+  if (redoStack.length > 0) {
+    const nextState = redoStack[0];
+    setHistory((prevHistory) => [...prevHistory, shapes]);
+    setShapes(nextState);
+    setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
+  }
+}, [redoStack, shapes]);
 
   /**
    * UNDO/REDO shortcut key events
@@ -342,16 +345,26 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     return () => video?.removeEventListener("timeupdate", handleTimeUpdate);
   }, [videoRef]);
 
+
+  
+  useEffect(() => {
+    if(!videoRef?.current?.paused || lockEdit){
+      setSelectedShapeId(null)
+    }
+  }, [videoRef?.current?.paused , lockEdit]);
+
   return (
     <Stage
       ref={stageRef}
       width={window.innerWidth}
       height={window.innerHeight}
-      style={{ position: "absolute", top: 0, left: 0 }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onClick={(e) => handleStageClick(e)}
+      style={{ position: "absolute", top: 0, left: 0 , display: hideAnnotations ? "none" :"block"}}
+      onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
+      onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
+      onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
+      onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
+      
+      
     >
       <Layer>
         {shapes
@@ -370,11 +383,12 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
-                draggable={!isFullScreen}
-                onClick={(e) => handleSelectShape(shape.id, e)}
-                onDragEnd={(e) => handleDragEnd(e, shape.id)}
-                onDragStart={handleDragStart}
-                onTransformEnd={(e) => handleTransformEnd(e, shape.id)}
+                draggable={!isFullScreen && !lockEdit}
+                onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e):null}
+                onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
+                onDragStart={ selectedShapeId ?  handleDragStart : null}
+                onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
+                color={annotationColor}
               />
             ) : (
               <CircleShape
@@ -382,6 +396,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
+                color={annotationColor}
               />
             )
           )}

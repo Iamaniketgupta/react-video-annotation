@@ -178,20 +178,19 @@
 // export default ReactPlayer;
 
 import React, { useRef, useState, useEffect } from "react";
-import VideoController from "../VideoPlayerController/VideoPlayerController";
 import Canvas from "../components/Canvas";
 import usePlayer from "../hooks/Player";
 import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
 
-const ReactPlayer = () => {
+const ReactPlayer = ({url="hai" , width=1080}) => {
   const { playerRef, getCurrentTime } = usePlayer();
   const [stageSize, setStageSize] = useState({ width: "100%", height: "100%" });
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
-  const [wid, setWid] = useState(640);
+  const [wid, setWid] = useState(width || 640);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const wrapperRef = useRef(null);
-  const [wrapperSize, setWrapperSize] = useState({ width: 0, height: 0 });
+  
+  const [wrapperSize, setWrapperSize] = useState({ width:  0, height: 0 });
 
   // Handle window resizing to maintain video aspect ratio
   useEffect(() => {
@@ -262,7 +261,7 @@ const ReactPlayer = () => {
         {/* Video player for playback */}
         <video
           ref={playerRef}
-          src="x.mp4"
+          src={url}
           style={{
             position: "absolute",
             top: 0,
