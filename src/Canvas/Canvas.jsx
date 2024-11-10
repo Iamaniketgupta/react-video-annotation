@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
+import { throttle } from 'lodash';
 import generateId from "../utils/generateId";
 import { useVideoContext } from "../app/VideoPlayerContext";
 
@@ -31,6 +32,7 @@ const Rectangle = forwardRef(
       onDragEnd,
       onDragStart,
       onTransformEnd,
+      onTransformStart
     },
     ref
   ) => (
@@ -47,7 +49,9 @@ const Rectangle = forwardRef(
       onClick={onClick}
       onDragEnd={onDragEnd}
       onDragStart={onDragStart}
+      onTransformStart={onTransformStart}
       onTransformEnd={onTransformEnd}
+
     />
   )
 );
@@ -85,15 +89,22 @@ const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
  * @returns {JSX.Element} - Rendered canvas with shapes.
  */
 function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
-  const [shapes, setShapes] = useState([]); // State for storing shapes
-  const [isDrawing, setIsDrawing] = useState(false); // State to track if drawing is active
-  const [newShape, setNewShape] = useState(null); // State for the current shape being drawn
-  const [selectedShapeId, setSelectedShapeId] = useState(null); // State for the selected shape ID
-  const [currentTime, setCurrentTime] = useState(getCurrentTime); // Current time of the video
-  const shapeRef = useRef({}); // Reference for each shape
-  const transformerRef = useRef(); // Reference for the transformer
-  const stageRef = useRef(null); // Stage reference for the Konva stage
-  const {annotationColor , lockEdit , hideAnnotations} = useVideoContext()
+
+  // GENERAL STATES
+  const [shapes, setShapes] = useState([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [newShape, setNewShape] = useState(null);
+  const [selectedShapeId, setSelectedShapeId] = useState(null);
+  const [currentTime, setCurrentTime] = useState(getCurrentTime);
+
+  // CONTEXT VALUES
+  const { annotationColor, lockEdit, hideAnnotations } = useVideoContext()
+
+  // REF STATES
+  const shapeRef = useRef({});
+  const transformerRef = useRef();
+  const stageRef = useRef(null);
+
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -106,7 +117,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleMouseDown = useCallback(
     (e) => {
-      if(isFullScreen) return;
+      if (isFullScreen) return;
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
       const startTime = currentTime;
@@ -135,21 +146,27 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {Object} e - The mouse event object.
    */
-  const handleMouseMove = useCallback(
-    (e) => {
-      if(isFullScreen) return;
+
+  const handleMouseMove =
+    throttle((e) => {
+      if (isFullScreen) return;
       if (!isDrawing || !newShape) return;
+
       const stage = e.target.getStage();
       const { x, y } = stage.getPointerPosition();
-      const width = x - newShape.properties.x;
-      const height = y - newShape.properties.y;
-      setNewShape({
-        ...newShape,
-        properties: { ...newShape.properties, width, height },
-      });
-    },
-    [isDrawing, isFullScreen, newShape]
-  );
+
+      if (x !== newShape.properties.x || y !== newShape.properties.y) {
+        const width = x - newShape.properties.x;
+        const height = y - newShape.properties.y;
+
+        setNewShape((prevShape) => ({
+          ...prevShape,
+          properties: { ...prevShape.properties, width, height },
+        }));
+
+
+      }
+    }, 100)
 
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -157,7 +174,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The mouse event object.
    */
   const handleMouseUp = useCallback(() => {
-   
+
     if (newShape) {
       setHistory((prevHistory) => [...prevHistory, shapes]);
       setRedoStack([]);
@@ -167,7 +184,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     }
   }, [newShape, shapes]);
 
-  
+
   /**
    * Handle shape selection by setting the selected shape's ID.
    *
@@ -185,8 +202,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The click event object.
    */
   const handleStageClick = (e) => {
-    if(isFullScreen) return;
-    
+    if (isFullScreen) return;
+
     if (e.target === e.target.getStage()) {
       setSelectedShapeId(null);
     }
@@ -198,7 +215,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {string} shapeId - The ID of the shape to delete.
    */
   const handleDeleteShape = useCallback(() => {
-    console.log(selectedShapeId)
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
@@ -210,8 +226,9 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {Object} e - The event object.
    */
-  const handleDragStart = (e) =>
-    (e.target.getStage().container().style.cursor = "move");
+  const handleDragStart = (e) => {
+    e.target.getStage().container().style.cursor = "move";
+  }
 
   /**
    * Handle drag end event to update the shape's position.
@@ -238,15 +255,19 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {string} shapeId - The ID of the shape being transformed.
    */
 
+  const handleTransformStart = useCallback(() => {
+    setHistory((prevHistory) => [...prevHistory,shapes]);
+    setRedoStack([]);
+  }, [shapes]);
   
   const handleTransformEnd = useCallback(
     (e, shapeId) => {
       const node = e.target;
-      const { x, y, width, height } = node.attrs;
+      const scaleX = node.scaleX();
+      const scaleY = node.scaleY();
 
-      // Save the current state before modifying
-      setHistory((prevHistory) => [...prevHistory, shapes]);
-      setRedoStack([]); // Clear redo stack after a new action
+      node.scaleX(1);
+      node.scaleY(1);
 
       if (!isFullScreen) {
         setShapes((prevShapes) =>
@@ -256,46 +277,49 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 ...shape,
                 properties: {
                   ...shape.properties,
-                  x: x / scale.scaleX,
-                  y: y / scale.scaleY,
-                  width: width / scale.scaleX,
-                  height: height / scale.scaleY,
+                  x: node.x(),
+                  y: node.y(),
+                  width: node.width() * scaleX,
+                  height: node.height() * scaleY,
                 },
               }
               : shape
           )
         );
+
       }
+
     },
-    [isFullScreen, shapes, scale.scaleX, scale.scaleY]
+    [isFullScreen]
   );
 
+  /**
+     * Handle UNDO.
+     */
+  const handleUndo = useCallback(() => {
+    if (history.length > 0) {
+      const lastState = history[history.length - 1];
+      setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
+      setShapes(lastState);
+      setHistory((prevHistory) => prevHistory.slice(0, -1));
+    }
+  }, [history, shapes]);
 
-  
-/**
-   * Handle UNDO.
+  // console.log({ "history": history })
+  // console.log({ "REdo": redoStack })
+  // console.log({ "shapes": shapes })
+
+  /**
+   * Handle REDO.
    */
-const handleUndo = useCallback(() => {
-  if (history.length > 0) {
-    const lastState = history[history.length - 1];
-    setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
-    setShapes(lastState);
-    setHistory((prevHistory) => prevHistory.slice(0, -1));
-  }
-}, [history, shapes]);
-
-
-/**
- * Handle REDO.
- */
-const handleRedo = useCallback(() => {
-  if (redoStack.length > 0) {
-    const nextState = redoStack[0];
-    setHistory((prevHistory) => [...prevHistory, shapes]);
-    setShapes(nextState);
-    setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
-  }
-}, [redoStack, shapes]);
+  const handleRedo = useCallback(() => {
+    if (redoStack.length > 0) {
+      const nextState = redoStack[0];
+      setHistory((prevHistory) => [...prevHistory, shapes]);
+      setShapes(nextState);
+      setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
+    }
+  }, [redoStack, shapes]);
 
   /**
    * UNDO/REDO shortcut key events
@@ -346,25 +370,25 @@ const handleRedo = useCallback(() => {
   }, [videoRef]);
 
 
-  
+
   useEffect(() => {
-    if(!videoRef?.current?.paused || lockEdit){
+    if (!videoRef?.current?.paused || lockEdit) {
       setSelectedShapeId(null)
     }
-  }, [videoRef.current.paused, lockEdit, videoRef]);
+  }, [videoRef?.current?.paused, lockEdit, videoRef]);
 
   return (
     <Stage
       ref={stageRef}
       width={window.innerWidth}
       height={window.innerHeight}
-      style={{ position: "absolute", top: 0, left: 0 , display: hideAnnotations ? "none" :"block"}}
+      style={{ position: "absolute", top: 0, left: 0, display: hideAnnotations ? "none" : "block" }}
       onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
       onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
       onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
       onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
-      
-      
+
+
     >
       <Layer>
         {shapes
@@ -384,11 +408,12 @@ const handleRedo = useCallback(() => {
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
                 draggable={!isFullScreen && !lockEdit}
-                onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e):null}
+                onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e) : null}
                 onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
-                onDragStart={ selectedShapeId ?  handleDragStart : null}
+                onDragStart={selectedShapeId ? handleDragStart : null}
                 onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
                 color={annotationColor}
+                onTransformStart={selectedShapeId ? handleTransformStart : null}
               />
             ) : (
               <CircleShape
