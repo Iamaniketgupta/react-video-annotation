@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
 import generateId from "../utils/generateId";
@@ -109,7 +110,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
-        color: "red",
+        color: "re
         label: "",
         data: {},
         properties: {
@@ -153,9 +154,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {Object} e - The mouse event object.
    */
   const handleMouseUp = useCallback(() => {
-    // if (newShape) setShapes((prevShapes) => [...prevShapes, newShape]);
-    // setIsDrawing(false);
-    // setNewShape(null);
+   
     if (newShape) {
       setHistory((prevHistory) => [...prevHistory, shapes]);
       setRedoStack([]);
@@ -163,7 +162,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       setIsDrawing(false);
       setNewShape(null);
     }
-  }, [newShape]);
+  }, [newShape, shapes]);
 
   /**
    * Handle shape selection by setting the selected shape's ID.
@@ -263,7 +262,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
         );
       }
     },
-    [scale, isFullScreen]
+    [isFullScreen, shapes, scale.scaleX, scale.scaleY]
   );
 
 
