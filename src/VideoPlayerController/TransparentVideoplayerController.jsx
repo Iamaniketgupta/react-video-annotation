@@ -21,7 +21,6 @@ const TransparentVideoController = ({playerRef}) => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimeout = useRef(null);
 
-  console.log({controlsVisible})
 
   useEffect(() => {
     const handleMouseMove = (event) => {

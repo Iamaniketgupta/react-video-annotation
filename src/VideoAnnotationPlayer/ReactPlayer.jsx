@@ -64,7 +64,6 @@ const ReactPlayer = ({ url, width }) => {
   }, []);
 
 
-  console.log({ isFullScreen });
   return (
     <div
       style={{

@@ -134,21 +134,34 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {Object} e - The mouse event object.
    */
-  const handleMouseMove = useCallback(
-    (e) => {
-      if(isFullScreen) return;
-      if (!isDrawing || !newShape) return;
-      const stage = e.target.getStage();
-      const { x, y } = stage.getPointerPosition();
-      const width = x - newShape.properties.x;
-      const height = y - newShape.properties.y;
-      setNewShape({
-        ...newShape,
-        properties: { ...newShape.properties, width, height },
-      });
-    },
-    [isDrawing, newShape]
-  );
+const handleMouseMove = useCallback(
+  (e) => {
+    if (isFullScreen) return;
+    if (!isDrawing || !newShape) return;
+
+    const videoRect = videoRef.current.getBoundingClientRect();  // Get the video element's bounding box
+    const stage = e.target.getStage();
+    
+    const { x, y } = stage.getPointerPosition();
+    console.log({stage:stage.getPointerPosition()})
+
+    // Clamp the x and y coordinates within the video boundaries
+    const clampedX = Math.max(videoRect.left, Math.min(videoRect.right, x));
+    const clampedY = Math.max(videoRect.top, Math.min(videoRect.bottom, y));
+
+    // Calculate width and height of the shape based on the clamped coordinates
+    const width = clampedX - newShape.properties.x;
+    const height = clampedY - newShape.properties.y;
+
+    // Update the shape with the new clamped values
+    setNewShape({
+      ...newShape,
+      properties: { ...newShape.properties, width, height },
+    });
+  },
+  [isDrawing, newShape]
+);
+
 
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -197,7 +210,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {string} shapeId - The ID of the shape to delete.
    */
   const handleDeleteShape = useCallback(() => {
-    console.log(selectedShapeId)
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
@@ -209,8 +221,12 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {Object} e - The event object.
    */
-  const handleDragStart = (e) =>
+  const handleDragStart = (e , shapeId) =>{
+    if(shapeId !== selectedShapeId) return;
+
+
     (e.target.getStage().container().style.cursor = "move");
+  }
 
   /**
    * Handle drag end event to update the shape's position.
@@ -242,6 +258,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     (e, shapeId) => {
       const node = e.target;
       const { x, y, width, height } = node.attrs;
+      console.log({x,y})
 
       // Save the current state before modifying
       setHistory((prevHistory) => [...prevHistory, shapes]);
@@ -345,12 +362,21 @@ const handleRedo = useCallback(() => {
   }, [videoRef]);
 
 
+  const isVisible = (shapeId) => {
+    const shape = shapes.find((shape) => shape.id === shapeId);
+    return (
+      currentTime >= shape?.properties?.startTime &&
+      currentTime <= shape?.properties?.endTime
+    );
+  };
+
+
   
   useEffect(() => {
-    if(!videoRef?.current?.paused || lockEdit){
+    if(!videoRef?.current?.paused || lockEdit || !isVisible(selectedShapeId) ){
       setSelectedShapeId(null)
     }
-  }, [videoRef?.current?.paused , lockEdit]);
+  }, [videoRef?.current?.paused , lockEdit , currentTime]);
 
   return (
     <Stage
@@ -382,10 +408,10 @@ const handleRedo = useCallback(() => {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
-                draggable={!isFullScreen && !lockEdit}
+                draggable={!isFullScreen && !lockEdit && shape.id === selectedShapeId}
                 onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e):null}
-                onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
-                onDragStart={ selectedShapeId ?  handleDragStart : null}
+                onDragEnd={shape.id === selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
+                onDragStart={ shape.id === selectedShapeId ? (e)=>  handleDragStart(e , shape.id) : null}
                 onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
                 color={annotationColor}
               />
