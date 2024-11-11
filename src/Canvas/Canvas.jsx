@@ -4,6 +4,7 @@ import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
 import { throttle } from 'lodash';
 import generateId from "../utils/generateId";
 import { useVideoContext } from "../app/VideoPlayerContext";
+import { redo, undo ,deleteShape} from "./utils";
 
 /**
  * Rectangle component renders a rectangle shape on the canvas.
@@ -48,6 +49,8 @@ const Rectangle = forwardRef(
       draggable={draggable}
       onClick={onClick}
       onDragEnd={onDragEnd}
+      onMouseEnter={(e)=>e.target.getStage().container().style.cursor = "pointer"}
+      onMouseLeave={(e)=>e.target.getStage().container().style.cursor = "default"}
       onDragStart={onDragStart}
       onTransformStart={onTransformStart}
       onTransformEnd={onTransformEnd}
@@ -214,7 +217,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {string} shapeId - The ID of the shape to delete.
    */
-  const handleDeleteShape = useCallback(() => {
+   deleteShape = useCallback(() => {
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
@@ -238,6 +241,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleDragEnd = useCallback((e, shapeId) => {
     const { x, y } = e.target.position();
+    console.log({x,y})
     setShapes((prevShapes) =>
       prevShapes.map((shape) =>
         shape.id === shapeId
@@ -296,7 +300,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   /**
      * Handle UNDO.
      */
-  const handleUndo = useCallback(() => {
+   undo = useCallback(() => {
     if (history.length > 0) {
       const lastState = history[history.length - 1];
       setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
@@ -305,14 +309,11 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     }
   }, [history, shapes]);
 
-  // console.log({ "history": history })
-  // console.log({ "REdo": redoStack })
-  // console.log({ "shapes": shapes })
-
+ 
   /**
    * Handle REDO.
    */
-  const handleRedo = useCallback(() => {
+   redo= useCallback(() => {
     if (redoStack.length > 0) {
       const nextState = redoStack[0];
       setHistory((prevHistory) => [...prevHistory, shapes]);
@@ -328,13 +329,13 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        handleUndo();
+        undo();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-        handleRedo();
+        redo();
       }
       if (e.key === 'Delete') {
-        handleDeleteShape()
+        deleteShape()
       }
     };
 
@@ -342,7 +343,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleUndo, handleRedo, handleDeleteShape]);
+  }, [handleUndo, handleRedo, deleteShape]);
 
 
 
@@ -370,12 +371,6 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   }, [videoRef]);
 
 
-
-  // useEffect(() => {
-  //   if (!videoRef?.current?.paused || lockEdit) {
-  //     setSelectedShapeId(null)
-  //   }
-  // }, [videoRef?.current?.paused, lockEdit, videoRef]);
   const isVisible = (shapeId) => {
     const shape = shapes.find((shape) => shape.id === shapeId);
     return (
@@ -390,7 +385,9 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     }
   }, [videoRef?.current?.paused , lockEdit , currentTime]);
 
-  
+ 
+
+   
   return (
     <Stage
       ref={stageRef}
@@ -421,7 +418,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
                 {...shape}
                 scaleX={scale.scaleX}
                 scaleY={scale.scaleY}
-                draggable={!isFullScreen && !lockEdit}
+                draggable={!isFullScreen && !lockEdit && shape.id===selectedShapeId}
                 onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e) : null}
                 onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
                 onDragStart={selectedShapeId ? handleDragStart : null}
@@ -459,6 +456,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
         />
       </Layer>
     </Stage>
+  
   );
 }
 

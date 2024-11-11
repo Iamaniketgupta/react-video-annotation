@@ -1,4 +1,2 @@
-import VideoAnnotationPlayer from "../ReactPlayer/ReactPlayer.jsx"
-
-
-export default VideoAnnotationPlayer    
+import TwoDVideoAnnotation from "./TwoDVideoAnnotation"
+export default TwoDVideoAnnotation    

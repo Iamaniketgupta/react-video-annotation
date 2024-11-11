@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 
 export default function usePlayer() {
     const playerRef = useRef(null);
