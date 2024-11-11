@@ -371,12 +371,26 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
 
 
 
+  // useEffect(() => {
+  //   if (!videoRef?.current?.paused || lockEdit) {
+  //     setSelectedShapeId(null)
+  //   }
+  // }, [videoRef?.current?.paused, lockEdit, videoRef]);
+  const isVisible = (shapeId) => {
+    const shape = shapes.find((shape) => shape.id === shapeId);
+    return (
+      currentTime >= shape?.properties?.startTime &&
+      currentTime <= shape?.properties?.endTime
+    );
+  };
+
   useEffect(() => {
-    if (!videoRef?.current?.paused || lockEdit) {
+    if(!videoRef?.current?.paused || lockEdit || !isVisible(selectedShapeId) ){
       setSelectedShapeId(null)
     }
-  }, [videoRef?.current?.paused, lockEdit, videoRef]);
+  }, [videoRef?.current?.paused , lockEdit , currentTime]);
 
+  
   return (
     <Stage
       ref={stageRef}
