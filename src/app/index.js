@@ -1,2 +1,4 @@
 import TwoDVideoAnnotation from "./TwoDVideoAnnotation"
-export default TwoDVideoAnnotation    
+import { undo , redo , deleteShape } from '../observerDesignPattern/ObserverSelectionInstance';
+export default TwoDVideoAnnotation  
+export{undo , redo, deleteShape}  

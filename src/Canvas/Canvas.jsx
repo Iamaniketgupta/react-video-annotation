@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
+import React , { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
 import { throttle } from 'lodash';
 import generateId from "../utils/generateId";
 import { useVideoContext } from "../app/VideoPlayerContext";
-import { redo, undo ,deleteShape} from "./utils";
-
+// import { redo, undo ,deleteShape} from "./utils";
+import { Manager } from "../observerDesignPattern/ObserverDesignPattern";
+import ObserverSelectionInstance from "../observerDesignPattern/ObserverSelectionInstance";
 /**
  * Rectangle component renders a rectangle shape on the canvas.
  *
@@ -217,7 +218,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {string} shapeId - The ID of the shape to delete.
    */
-   deleteShape = useCallback(() => {
+   const deleteShape = useCallback(() => {
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
@@ -300,7 +301,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   /**
      * Handle UNDO.
      */
-   undo = useCallback(() => {
+   const undo = useCallback(() => {
+    console.log({history})
     if (history.length > 0) {
       const lastState = history[history.length - 1];
       setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
@@ -313,7 +315,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   /**
    * Handle REDO.
    */
-   redo= useCallback(() => {
+   const redo= useCallback(() => {
     if (redoStack.length > 0) {
       const nextState = redoStack[0];
       setHistory((prevHistory) => [...prevHistory, shapes]);
@@ -343,7 +345,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleUndo, handleRedo, deleteShape]);
+  }, [undo, redo, deleteShape]);
 
 
 
@@ -386,9 +388,18 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   }, [videoRef?.current?.paused , lockEdit , currentTime]);
 
  
+  useEffect(() => {
+    const observer = new Manager(undo , redo , deleteShape);
+    ObserverSelectionInstance?.addObserver(observer);
 
+    return () => {
+      ObserverSelectionInstance?.removeObserver(observer);
+    };
+  }, [history , redo , undo , deleteShape]);
+  
    
   return (
+    <>
     <Stage
       ref={stageRef}
       width={window.innerWidth}
@@ -456,6 +467,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
         />
       </Layer>
     </Stage>
+    </>
   
   );
 }

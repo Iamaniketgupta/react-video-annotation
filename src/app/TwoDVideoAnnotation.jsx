@@ -23,9 +23,8 @@ const TwoDVideoAnnotation = ({
       initialData={data}
       externalSetData={setData} 
       externalOnSubmit={onSubmit}
-      annotationColor={annotationColor} 
+      annotationColor={annotationColor}
     >
-      
       <ReactPlayer url={videoUrl} width={videoWidth} />
 
     </VideoProvider>
