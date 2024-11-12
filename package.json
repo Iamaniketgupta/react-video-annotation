@@ -32,10 +32,11 @@
   },
   "homepage": "https://github.com/iamaniketgupta/react-annotation-tool#readme",
   "devDependencies": {
+    "@babel/cli": "^7.25.9",
     "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-runtime": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
-    "babel-cli": "^6.26.0",
     "babel-loader": "^8.0.0",
     "css-loader": "^7.1.2",
     "eslint": "^9.13.0",
