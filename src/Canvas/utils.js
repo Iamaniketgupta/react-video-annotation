@@ -1,9 +1,9 @@
-export const undo = ()=>{
+export let undo = ()=>{
 
 }
-export const redo = ()=>{
+export let redo = ()=>{
     
 }
 
-export const deleteShape = ()=>{
+export let deleteShape = ()=>{
 }
