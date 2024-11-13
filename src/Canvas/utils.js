@@ -1,9 +1,4 @@
-export let undo = ()=>{
+export var undo 
+export var redo;
 
-}
-export let redo = ()=>{
-    
-}
-
-export let deleteShape = ()=>{
-}
+export var deleteShape 
