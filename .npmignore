@@ -1,5 +1,6 @@
-# Exclude source files
+# Exclude source and test files
 /src
+/test
 
 # Exclude local configuration
 /.babelrc
