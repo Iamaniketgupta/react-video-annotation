@@ -1,25 +1,24 @@
 import { useRef, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import TwoDVideoAnnotation from './anno/index';
+
+import TwoDVideoAnnotation from '../../src/app/index';
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+
   const myref = useRef(null);
-console.log(myref)
-  const undo =()=>{
+  console.log(myref)
+  const undo = () => {
     myref.current?.undo();
   }
 
-  const redo =()=>{
+  const redo = () => {
     myref.current?.redo();
   }
 
-  const del =()=>{
+  const del = () => {
     myref.current?.deleteShape();
   }
-  
+
   return (
     <div style={{ backgroundColor: "black", width: "100%", height: "100%" }}>
 

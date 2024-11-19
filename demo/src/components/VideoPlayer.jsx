@@ -1,17 +1,13 @@
-import TwoDVideoAnnotation from 'react-video-annotation-tool';
+import { forwardRef } from "react";
+import TwoDVideoAnnotation from "../../../src/app/index";
 
-export default function VideoPlayer() {
+const VideoPlayer = forwardRef(function VideoPlayer(props,ref) {
+
     return (
-        <TwoDVideoAnnotation
-            videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            shape="rectangle"
-            hideAnnotations={false}
-            
-            lockEdit={false}
-            onSubmit={() => { }}
-          />
+        
 
-
+<></>
 
     )
-}
+})
+export default VideoPlayer

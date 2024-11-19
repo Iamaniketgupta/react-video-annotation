@@ -25,6 +25,8 @@ const useVideoController = (playerRef) => {
   }, [playerRef]);
 
   useEffect(() => {
+    if(!playerRef)
+      return;
     const updateProgress = () => {
       const player = playerRef?.current;
       if (player && duration > 0) {
@@ -39,6 +41,7 @@ const useVideoController = (playerRef) => {
   }, [playerRef, duration]);
 
   const handlePlayPause = () => {
+
     const player = playerRef.current;
     if (playing) {
       player.pause();
@@ -99,6 +102,7 @@ const useVideoController = (playerRef) => {
     handleSpeedChange,
     handleFullScreen,
     formatTime,
+    setCurrentTime,
     isFullScreen
   };
 };

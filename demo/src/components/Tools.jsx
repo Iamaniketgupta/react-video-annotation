@@ -1,7 +1,16 @@
-import { undo, redo, deleteShape } from "react-video-annotation-tool";
 import { FaUndo, FaRedo, FaTrash, FaGithub } from "react-icons/fa";
-console.log(undo)
-export default function Tools() {
+export default function Tools({ playertools}) {
+
+    const undo = () => {
+        playertools.current?.undo()
+    }
+    const redo = () => {
+        playertools.current?.redo()
+    }
+    const deleteShape = () => {
+        playertools.current?.deleteShape()
+    }
+
     return (
         <>
             {/* Branding */}
