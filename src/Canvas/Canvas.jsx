@@ -1,12 +1,15 @@
 /* eslint-disable react/prop-types */
-import React , { useState, useEffect, useRef, useCallback, forwardRef } from "react";
-import { Stage, Layer, Rect, Transformer, Circle } from "react-konva";
-import { throttle } from 'lodash';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
+import { Stage, Layer, Rect, Transformer, Circle, Image } from "react-konva";
+import { set, throttle } from 'lodash';
 import generateId from "../utils/generateId";
-import { useVideoContext } from "../app/VideoPlayerContext";
+import { VideoContext } from "../app/VideoPlayerContext";
 // import { redo, undo ,deleteShape} from "./utils";
 import { Manager } from "../observerDesignPattern/ObserverDesignPattern";
 import ObserverSelectionInstance from "../observerDesignPattern/ObserverSelectionInstance";
+import Player from "../VideoPlayer/Player";
+import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
+import useVideoController from "../VideoPlayerController/UseVideoPlayerControllerHook";
 /**
  * Rectangle component renders a rectangle shape on the canvas.
  *
@@ -34,25 +37,31 @@ const Rectangle = forwardRef(
       onDragEnd,
       onDragStart,
       onTransformEnd,
-      onTransformStart
+      onTransformStart,
+      onDragMove,
+      dragBoundFunc,
+      currentWidth,
+      currentHeight
     },
     ref
   ) => (
     <Rect
       ref={ref}
-      x={properties.x * scaleX}
-      y={properties.y * scaleY}
-      width={properties.width * scaleX}
-      height={properties.height * scaleY}
+      x={properties.x * (currentWidth/properties.screenWidth)}
+      y={properties.y * (currentHeight/properties.screenHeight)}
+      width={properties.width * (currentWidth/properties.screenWidth)}
+      height={properties.height * (currentHeight/properties.screenHeight)}
       shadowBlur={5}
       stroke={color}
       strokeWidth={2}
       draggable={draggable}
       onClick={onClick}
       onDragEnd={onDragEnd}
-      onMouseEnter={(e)=>e.target.getStage().container().style.cursor = "pointer"}
-      onMouseLeave={(e)=>e.target.getStage().container().style.cursor = "default"}
+      onMouseEnter={(e) => e.target.getStage().container().style.cursor = "pointer"}
+      onMouseLeave={(e) => e.target.getStage().container().style.cursor = "default"}
       onDragStart={onDragStart}
+      onDragMove={onDragMove}
+      dragBoundFunc={dragBoundFunc}
       onTransformStart={onTransformStart}
       onTransformEnd={onTransformEnd}
 
@@ -87,33 +96,72 @@ const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
  * Canvas component manages the drawing and transformation of shapes.
  *
  * @param {function} getCurrentTime - Function to get the current time from the video.
- * @param {React.Ref} videoRef - Reference to the video element.
  * @param {Object} scale - Scaling factors for the canvas (scaleX, scaleY).
  * @param {boolean} isFullScreen - Boolean to determine if in full-screen mode.
  * @returns {JSX.Element} - Rendered canvas with shapes.
  */
-function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
+const Canvas = forwardRef(function Canvas({ children,
+  url,
+  shape ,
+  hideAnnotations ,
+  lockEdit ,
+  initialData ,
+  externalSetData ,
+  externalOnSubmit ,
+  annotationColor
+}, ref) {
 
   // GENERAL STATES
-  const [shapes, setShapes] = useState([]);
+  const [shapes, setShapes] = useState(initialData|| []);
   const [isDrawing, setIsDrawing] = useState(false);
   const [newShape, setNewShape] = useState(null);
   const [selectedShapeId, setSelectedShapeId] = useState(null);
-  const [currentTime, setCurrentTime] = useState(getCurrentTime);
-
+  const [rectPosititon, setRectPosition] = useState({ x: null, y: null });
+  const [videoRefVal, setVideoRefVal] = useState(null);
+  const [dimensions, setDimensions] = useState({
+    width: 500,
+    height: 300,
+  });
+  
+  
+  
   // CONTEXT VALUES
-  const { annotationColor, lockEdit, hideAnnotations } = useVideoContext()
-
+  // const values = React.useContext(VideoContext)
+  
+  // console.log({ dada: values })
+  // const annotationColor = "red";
+  // const lockEdit = false;
+  // const hideAnnotations = false;
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
   const stageRef = useRef(null);
-
+  const canvasParentRef = useRef(null);
+  const layerRef = useRef(null);
+  const videoRef = useRef(null);
+  
+  // HOOK VALUES
+  const {
+    currentTime,
+    setCurrentTime,
+    isFullScreen
+  } = useVideoController(videoRefVal , canvasParentRef);
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  
+  const [canvasParentWidth, setcanvasParentWidth] = useState(canvasParentRef?.current?.offsetWidth);
+  const [canvasParentHeight, setcanvasParentHeight] = useState(canvasParentRef?.current?.offsetHeight);
+  
+  
+  
+  useEffect(() => {
+    setVideoRefVal(videoRef)
 
-
+    return () => {
+      setVideoRefVal(null)
+    }
+  }, [videoRef])
   /**
    * Handle mouse down event to start drawing a new shape.
    *
@@ -127,7 +175,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
-        color: "red",
+        color: annotationColor || "red",
         label: "",
         data: {},
         properties: {
@@ -138,9 +186,14 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
           height: 0,
           startTime,
           endTime: startTime + 0.5,
+          scaleX: 1,
+          scaleY: 1,
+          screenHeight: canvasParentHeight,
+          screenWidth: canvasParentWidth
         },
       });
       setIsDrawing(true);
+      
     },
     [currentTime, isFullScreen]
   );
@@ -157,6 +210,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       if (!isDrawing || !newShape) return;
 
       const stage = e.target.getStage();
+      
       const { x, y } = stage.getPointerPosition();
 
       if (x !== newShape.properties.x || y !== newShape.properties.y) {
@@ -184,6 +238,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       setRedoStack([]);
       setShapes((prevShapes) => [...prevShapes, newShape]);
       setIsDrawing(false);
+      setSelectedShapeId(newShape.id);
       setNewShape(null);
     }
   }, [newShape, shapes]);
@@ -207,7 +262,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
   const handleStageClick = (e) => {
     if (isFullScreen) return;
-
+    
     if (e.target === e.target.getStage()) {
       setSelectedShapeId(null);
     }
@@ -218,7 +273,7 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    *
    * @param {string} shapeId - The ID of the shape to delete.
    */
-   const deleteShape = useCallback(() => {
+  const deleteShape = useCallback(() => {
     setShapes((prevShapes) =>
       prevShapes.filter((shape) => shape.id !== selectedShapeId)
     );
@@ -241,17 +296,19 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    * @param {string} shapeId - The ID of the shape being dragged.
    */
   const handleDragEnd = useCallback((e, shapeId) => {
-    const { x, y } = e.target.position();
-    console.log({x,y})
-    setShapes((prevShapes) =>
-      prevShapes.map((shape) =>
-        shape.id === shapeId
-          ? { ...shape, properties: { ...shape.properties, x, y } }
-          : shape
-      )
-    );
+    const { x, y } = rectPosititon;
+    
+    if (x !== null && y !== null) {
+      setShapes((prevShapes) =>
+        prevShapes.map((shape) =>
+          shape.id === shapeId
+            ? { ...shape, properties: { ...shape.properties, x, y } }
+            : shape
+        )
+      );
+    }
     e.target.getStage().container().style.cursor = "default";
-  }, []);
+  }, [rectPosititon]);
 
   /**
    * Handle transform end event to update the shape's properties.
@@ -261,10 +318,10 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
    */
 
   const handleTransformStart = useCallback(() => {
-    setHistory((prevHistory) => [...prevHistory,shapes]);
+    setHistory((prevHistory) => [...prevHistory, shapes]);
     setRedoStack([]);
   }, [shapes]);
-  
+
   const handleTransformEnd = useCallback(
     (e, shapeId) => {
       const node = e.target;
@@ -301,8 +358,8 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   /**
      * Handle UNDO.
      */
-   const undo = useCallback(() => {
-    console.log({history})
+  const undo = useCallback(() => {
+
     if (history.length > 0) {
       const lastState = history[history.length - 1];
       setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
@@ -311,11 +368,11 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
     }
   }, [history, shapes]);
 
- 
+
   /**
    * Handle REDO.
    */
-   const redo= useCallback(() => {
+  const redo = useCallback(() => {
     if (redoStack.length > 0) {
       const nextState = redoStack[0];
       setHistory((prevHistory) => [...prevHistory, shapes]);
@@ -323,6 +380,54 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
       setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
     }
   }, [redoStack, shapes]);
+
+
+  
+  /**
+   * Set the data of the selected shape.
+   * @param {Object} data - The data to be set.
+   */
+  const setSelectedAnnotationData = useCallback((data) => {
+    if(!selectedShapeId){
+      throw new Error("Select a shape first");     
+    }
+
+    const shape = shapes.find((shape) => shape.id === selectedShapeId);
+    if (shape) {
+      shape.properties.data = data;
+      setShapes([...shapes]);
+    }
+  })
+
+  /**
+   * Get the data of the selected shape.
+   * @returns {any} The data of the selected shape.
+  */
+  const getSelectedAnnotationData = useCallback(() => {
+    if(!selectedShapeId){
+      throw new Error("Select a shape first");
+    }
+    const shape = shapes.find((shape) => shape.id === selectedShapeId);
+    if (shape) {
+      return shape?.properties?.data;
+    }
+  })
+  
+
+  // useEffect(() => {
+  //   if(initialData){
+  //     setShapes(initialData);  
+  //   }  
+  // }, [initialData])
+  
+  
+
+  useEffect(() => {
+    setcanvasParentHeight(canvasParentRef?.current?.offsetHeight);
+    setcanvasParentWidth(canvasParentRef?.current?.offsetWidth);
+    
+  }, [canvasParentRef?.current?.offsetHeight , canvasParentRef?.current?.offsetWidth]);
+  
 
   /**
    * UNDO/REDO shortcut key events
@@ -373,103 +478,225 @@ function Canvas({ getCurrentTime, videoRef, scale, isFullScreen }) {
   }, [videoRef]);
 
 
-  const isVisible = (shapeId) => {
+  const isVisible = useCallback((shapeId) => {
     const shape = shapes.find((shape) => shape.id === shapeId);
     return (
       currentTime >= shape?.properties?.startTime &&
       currentTime <= shape?.properties?.endTime
     );
-  };
+  }, [currentTime, shapes]);
 
   useEffect(() => {
-    if(!videoRef?.current?.paused || lockEdit || !isVisible(selectedShapeId) ){
+    if (!videoRef.current?.paused || lockEdit || !isVisible(selectedShapeId)) {
       setSelectedShapeId(null)
     }
-  }, [videoRef?.current?.paused , lockEdit , currentTime]);
+  }, [videoRef.current?.paused, lockEdit, currentTime, isVisible, selectedShapeId]);
 
- 
+
+
   useEffect(() => {
-    const observer = new Manager(undo , redo , deleteShape);
+    const observer = new Manager(undo, redo, deleteShape);
     ObserverSelectionInstance?.addObserver(observer);
 
     return () => {
       ObserverSelectionInstance?.removeObserver(observer);
     };
-  }, [history , redo , undo , deleteShape]);
-  
+  }, [history, redo, undo, deleteShape]);
+
+  // lo
+  const dragBoundFunc = (pos) => {
+
+    const newX = Math.max(0, Math.min(pos.x, dimensions.width - shapeRef.current[selectedShapeId].width()));
+    const newY = Math.max(0, Math.min(pos.y, dimensions.height - shapeRef.current[selectedShapeId].height()));
    
+
+    return { x: newX, y: newY };
+  };
+  const handleDragMove = (e) => {
+
+    const newX = Math.max(0, Math.min(e.target.x(), dimensions.width - shapeRef.current[selectedShapeId].width()));
+    const newY = Math.max(0, Math.min(e.target.y(), dimensions.height - shapeRef.current[selectedShapeId].height()));
+    
+
+    setRectPosition({ x: newX, y: newY });
+
+  };
+
+  const drawVideoFrame = useCallback(() => {
+    const layer = layerRef.current;
+    const videoElement = videoRef.current;
+
+    if (videoElement && layer) {
+      const context = layer.getCanvas().getContext('2d');
+      context.clearRect(0, 0, layer.getCanvas().width, layer.getCanvas().height);
+      context.drawImage(videoElement, 0, 0, canvasParentRef.current?.offsetWidth, canvasParentRef.current?.offsetHeight);
+      layer.batchDraw();
+    }
+  }, []);
+
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    let animationFrameId;
+
+    const updateFrame = () => {
+      drawVideoFrame();
+      animationFrameId = requestAnimationFrame(updateFrame);
+    };
+
+    videoElement?.addEventListener('play', () => {
+      animationFrameId = requestAnimationFrame(updateFrame);
+    });
+
+    videoElement?.addEventListener('pause', () => {
+      cancelAnimationFrame(animationFrameId);
+    });
+
+    videoElement?.addEventListener('ended', () => {
+      cancelAnimationFrame(animationFrameId);
+    });
+
+    return () => {
+      videoElement?.removeEventListener('play', updateFrame);
+      videoElement?.removeEventListener('pause', updateFrame);
+      videoElement?.removeEventListener('ended', updateFrame);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [drawVideoFrame, videoRef]);
+
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (canvasParentRef.current) {
+        const { offsetWidth, offsetHeight } = canvasParentRef.current;
+        setDimensions({
+          width: offsetWidth,
+          height: offsetHeight,
+        });
+      }
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+
+  useImperativeHandle(ref, () => ({
+    shapes,
+    undo,
+    redo,
+    deleteShape,
+    setSelectedAnnotationData,
+    getSelectedAnnotationData
+  }));
+
+  
+
   return (
     <>
-    <Stage
-      ref={stageRef}
-      width={window.innerWidth}
-      height={window.innerHeight}
-      style={{ position: "absolute", top: 0, left: 0, display: hideAnnotations ? "none" : "block" }}
-      onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
-      onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
-      onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
-      onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
+      <div
+        ref={canvasParentRef}
+        style={
+          {
+            maxWidth: window.innerWidth,
+            aspectRatio: "16/9",
+            minHeight: 300,
+            minWidth: 500,
+            border: "1px solid blue"
+          }
+        }>
+        <Stage
+
+          ref={stageRef}
+          width={dimensions.width}
+          height={dimensions.height}
+
+          style={{ backgroundColor: "black", display: hideAnnotations ? "none" : "block" }}
+          onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
+          onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
+          onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
+          onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
 
 
-    >
-      <Layer>
-        {shapes
-          .filter(
-            (shape) =>
-              currentTime >= shape.properties.startTime &&
-              currentTime <= shape.properties.endTime
-          )
-          .map((shape) =>
-            shape.properties.type === "rectangle" ? (
-              <Rectangle
-                key={shape.id}
-                ref={(ref) => {
-                  shapeRef.current[shape.id] = ref;
-                }}
-                {...shape}
-                scaleX={scale.scaleX}
-                scaleY={scale.scaleY}
-                draggable={!isFullScreen && !lockEdit && shape.id===selectedShapeId}
-                onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e) : null}
-                onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
-                onDragStart={selectedShapeId ? handleDragStart : null}
-                onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
-                color={annotationColor}
-                onTransformStart={selectedShapeId ? handleTransformStart : null}
+        >
+          <Layer
+            ref={layerRef}
+          >
+            <Image
+              image={videoRef?.current}
+              width={dimensions.width}
+              height={dimensions.height}
+
+            />
+
+            {shapes
+              .filter(
+                (shape) =>
+                  currentTime >= shape.properties.startTime &&
+                  currentTime <= shape.properties.endTime
+              )
+              .map((shape) =>
+                shape.properties.type === "rectangle" ? (
+                  <Rectangle
+                    key={shape.id}
+                    ref={(ref) => {
+                      shapeRef.current[shape.id] = ref;
+                    }}
+                    {...shape}
+                    scaleX={stageRef.current?.scaleX()}
+                    scaleY={stageRef.current?.scaleY()}
+                    draggable={!isFullScreen && !lockEdit && shape.id === selectedShapeId}
+                    onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e) : null}
+                    onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
+                    onDragStart={selectedShapeId ? handleDragStart : null}
+                    onDragMove={selectedShapeId ? handleDragMove : null}
+                    dragBoundFunc={dragBoundFunc}
+                    onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
+                    color={shape.color}
+                    onTransformStart={selectedShapeId ? handleTransformStart : null}
+                    currentHeight={canvasParentHeight}
+                    currentWidth={canvasParentWidth}
+                  />
+                ) : (
+                  <CircleShape
+                    key={shape.id}
+                    {...shape}
+                    scaleX={stageRef.current?.scaleX()}
+                    scaleY={stageRef.current?.scaleY()}
+                    color={shape.color}
+                  />
+                )
+              )}
+            {newShape && (
+              <Rect
+                x={newShape.properties.x}
+                y={newShape.properties.y}
+                width={newShape.properties.width}
+                height={newShape.properties.height}
+                stroke="violet"
+                opacity={0.5}
               />
-            ) : (
-              <CircleShape
-                key={shape.id}
-                {...shape}
-                scaleX={scale.scaleX}
-                scaleY={scale.scaleY}
-                color={annotationColor}
-              />
-            )
-          )}
-        {newShape && (
-          <Rect
-            x={newShape.properties.x}
-            y={newShape.properties.y}
-            width={newShape.properties.width}
-            height={newShape.properties.height}
-            stroke="violet"
-            opacity={0.5}
-          />
-        )}
-        <Transformer
-          ref={transformerRef}
-          keepRatio={false}
-          rotateEnabled={false}
-          anchorSize={7}
-          anchorCornerRadius={10}
+            )}
+            <Transformer
+              ref={transformerRef}
+              keepRatio={false}
+              rotateEnabled={false}
+              anchorSize={7}
+              anchorCornerRadius={10}
 
-        />
-      </Layer>
-    </Stage>
+            />
+          </Layer>
+        </Stage>
+      </div>
+
+      <Player url={url}
+        ref={videoRef} parentref={canvasParentRef} hidden />
+      <TransparentVideoController playerRef={videoRef} dimensions={dimensions} canvasParentRef={canvasParentRef} />
     </>
-  
+
   );
-}
+})
+
 
 export default Canvas;

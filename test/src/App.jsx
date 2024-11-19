@@ -7,7 +7,7 @@ import './App.css'
 function App() {
   const [count, setCount] = useState(0)
   const myref = useRef(null);
-console.log(myref)
+  
   const undo =()=>{
     myref.current?.undo();
   }
@@ -25,12 +25,12 @@ console.log(myref)
 
       <TwoDVideoAnnotation
         ref={myref}
-        url="./video.mkv"
+        videoUrl="x.mp4"
         shape="rectangle"
         hideAnnotations={false}
         videoWidth={640}
         lockEdit={false}
-        annotationColor="blue"
+        annotationColor="pink"
         onSubmit={() => console.log("Data submitted")
 
         }

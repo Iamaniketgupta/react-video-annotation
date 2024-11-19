@@ -18,7 +18,7 @@ export const VideoProvider = ({
   const [videoWidth, setVideoWidth] = useState(initialVideoWidth);
   const [data, internalSetData] = useState(initialData);
 
-  console.log(annotationColor)
+  
   
   const setData = externalSetData || internalSetData;
 

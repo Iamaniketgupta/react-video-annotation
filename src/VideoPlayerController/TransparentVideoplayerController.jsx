@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import useVideoController from "./UseVideoPlayerControllerHook";
+import { CiMaximize2 } from "react-icons/ci";
 
-const TransparentVideoController = ({playerRef}) => {
+import { FaPauseCircle, FaPlayCircle } from "react-icons/fa";
+
+const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) => {
   const {
     playing,
     played,
@@ -13,27 +16,28 @@ const TransparentVideoController = ({playerRef}) => {
     handleSpeedChange,
     handleFullScreen,
     formatTime,
-    
-  } = useVideoController(playerRef);
+
+  } = useVideoController(playerRef , canvasParentRef);
 
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimeout = useRef(null);
 
-  console.log({controlsVisible})
+  
 
   useEffect(() => {
     const handleMouseMove = (event) => {
-      const container = playerRef.current;
+      const container = canvasParentRef.current;
       const buffer = 10; // Distance from the edge in pixels
       if (container) {
         const { left, right, top } = container.getBoundingClientRect();
         
-        
+
         if (
           event.clientX <= left + buffer - 10 || // -10 is just a fudge factor
           event.clientX >= right - buffer ||
           event.clientY <= top + buffer
         ) {
+          
           setControlsVisible(false);
           return;
         }
@@ -50,8 +54,8 @@ const TransparentVideoController = ({playerRef}) => {
       }
     };
 
-    const container = document.getElementById("main-container");
-    
+    const container = canvasParentRef?.current;
+
     if (container) {
       container.addEventListener("mousemove", handleMouseMove);
     }
@@ -62,65 +66,55 @@ const TransparentVideoController = ({playerRef}) => {
       }
       clearTimeout(hideTimeout?.current);
     };
-  }, [playerRef]);
- 
+  }, [canvasParentRef]);
+
 
   return (
     <div
+      width={dimensions.width}
       style={{
-        position: "absolute",
-        bottom: "0",
+        minWidth: 500,
         height: "20px",
-        width: "98%",
-        margin:'0 20px',
-        
         background: "rgba(0, 0, 0, 0.4)",
         display: "flex",
         alignItems: "center",
-        padding: "10px 30px",
-        paddingRight: "20px",
+        gap: "3px",
+        padding: "10px 5px",
         color: "#fff",
         transition: "opacity 0.5s",
         opacity: controlsVisible ? 1 : 0,
         pointerEvents: controlsVisible ? "auto" : "none",
       }}
     >
-      <button
-        onClick={handlePlayPause}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "#fff",
-          cursor: "pointer",
-          fontSize: "20px",
-          marginRight: "10px",
-        }}
-      >
-        {playing ? <div style={{fontSize:"12px"}}>
-          play
-        </div>:"pause"
+      <div onClick={handlePlayPause} style={{ fontSize: "12px", cursor: "pointer", margin: "0 10px" }}>
+        {playing ?
+          <FaPauseCircle size={25} />
+          :
+          <FaPlayCircle size={25} />
         }
-      </button>
-      
+      </div>
+
+
       <input
         type="range"
         min={0}
         max={1}
-        
+
         step={0.01}
         value={played}
         onChange={(e) => handleSeekChange(parseFloat(e.target.value))}
         style={{
           flexGrow: 1,
-          marginRight: "10px",
+          cursor: "pointer",
           accentColor: "#ff0000",
         }}
       />
-      
-      <span style={{ marginRight: "15px", fontSize: "14px" }}>
+
+      <span style={{ marginRight: "10px", fontSize: "14px" }}>
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
-      
+
+
       <select
         onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
         value={playbackRate}
@@ -135,24 +129,25 @@ const TransparentVideoController = ({playerRef}) => {
           marginRight: "10px",
         }}
       >
+        <option value={0.25}>0.25x</option>
+        <option value={0.5}>0.5x</option>
         <option value={1}>1x</option>
         <option value={1.5}>1.5x</option>
         <option value={2}>2x</option>
       </select>
-      
-      <button
+
+
+      <CiMaximize2
         onClick={handleFullScreen}
         style={{
-          background: "transparent",
-          border: "none",
           color: "#fff",
           cursor: "pointer",
           fontSize: "18px",
+          marginRight: "10px",
         }}
-      >
-        ⛶
-      </button>
-    </div>
+       />
+   
+    </div >
   );
 };
 

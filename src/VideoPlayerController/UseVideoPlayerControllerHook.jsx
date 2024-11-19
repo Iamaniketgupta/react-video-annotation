@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const useVideoController = (playerRef) => {
+const useVideoController = (playerRef,canvasParentRef) => {
   const [playing, setPlaying] = useState(false);
   const [played, setPlayed] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -25,6 +25,8 @@ const useVideoController = (playerRef) => {
   }, [playerRef]);
 
   useEffect(() => {
+    if(!playerRef)
+      return;
     const updateProgress = () => {
       const player = playerRef?.current;
       if (player && duration > 0) {
@@ -39,6 +41,7 @@ const useVideoController = (playerRef) => {
   }, [playerRef, duration]);
 
   const handlePlayPause = () => {
+
     const player = playerRef.current;
     if (playing) {
       player.pause();
@@ -64,23 +67,20 @@ const useVideoController = (playerRef) => {
     }
   };
 
+
   const handleFullScreen = () => {
-    const parentElement = document.getElementById("main-container");
+    const parentElement = canvasParentRef.current;
     if (parentElement) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
-        setIsFullScreen(false);
       } else {
-        parentElement.requestFullscreen()
-        .then(() => {
-          setIsFullScreen(true);
-        })
-        .catch((err) => {
+        parentElement.requestFullscreen().catch((err) => {
           console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         });
       }
     }
   };
+  
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
@@ -88,6 +88,19 @@ const useVideoController = (playerRef) => {
     return `${minutes}:${seconds}`;
   };
 
+  useEffect(() => {
+    const onFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+  
+    document.addEventListener("fullscreenchange", onFullScreenChange);
+  
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange);
+    };
+  }, []);
+  
+  console.log({isFullScreen})
   return {
     playing,
     played,
@@ -99,6 +112,7 @@ const useVideoController = (playerRef) => {
     handleSpeedChange,
     handleFullScreen,
     formatTime,
+    setCurrentTime,
     isFullScreen
   };
 };
