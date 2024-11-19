@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useRef, useCallback, forwardRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Stage, Layer, Rect, Transformer, Circle, Image } from "react-konva";
 import { throttle } from 'lodash';
 import generateId from "../utils/generateId";
-import { useVideoContext } from "../app/VideoPlayerContext";
+import { VideoContext } from "../app/VideoPlayerContext";
 // import { redo, undo ,deleteShape} from "./utils";
 import { Manager } from "../observerDesignPattern/ObserverDesignPattern";
 import ObserverSelectionInstance from "../observerDesignPattern/ObserverSelectionInstance";
@@ -98,7 +98,16 @@ const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
  * @param {boolean} isFullScreen - Boolean to determine if in full-screen mode.
  * @returns {JSX.Element} - Rendered canvas with shapes.
  */
-function Canvas({ url }) {
+const Canvas = forwardRef(function Canvas({ children,
+  url,
+  shape ,
+  hideAnnotations ,
+  lockEdit ,
+  initialData ,
+  externalSetData ,
+  externalOnSubmit ,
+  annotationColor
+}, ref) {
 
   // GENERAL STATES
   const [shapes, setShapes] = useState([]);
@@ -119,9 +128,14 @@ function Canvas({ url }) {
     isFullScreen
   } = useVideoController(videoRefVal);
 
+  console.log(annotationColor)
   // CONTEXT VALUES
-  const { annotationColor, lockEdit, hideAnnotations } = useVideoContext()
+  // const values = React.useContext(VideoContext)
 
+  // console.log({ dada: values })
+  // const annotationColor = "red";
+  // const lockEdit = false;
+  // const hideAnnotations = false;
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
@@ -334,7 +348,7 @@ function Canvas({ url }) {
      * Handle UNDO.
      */
   const undo = useCallback(() => {
-  
+
     if (history.length > 0) {
       const lastState = history[history.length - 1];
       setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
@@ -402,7 +416,7 @@ function Canvas({ url }) {
     const video = videoRef.current;
     video?.addEventListener("timeupdate", handleTimeUpdate);
     return () => video?.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [ videoRef]);
+  }, [videoRef]);
 
 
   const isVisible = useCallback((shapeId) => {
@@ -411,7 +425,7 @@ function Canvas({ url }) {
       currentTime >= shape?.properties?.startTime &&
       currentTime <= shape?.properties?.endTime
     );
-  } ,[currentTime, shapes]);
+  }, [currentTime, shapes]);
 
   useEffect(() => {
     if (!videoRef.current?.paused || lockEdit || !isVisible(selectedShapeId)) {
@@ -441,8 +455,8 @@ function Canvas({ url }) {
   };
   const handleDragMove = (e) => {
 
-    const newX = Math.max(0, Math.min(e.target.x(), dimensions.width- shapeRef.current[selectedShapeId].width()));
-    const newY = Math.max(0, Math.min(e.target.y(),dimensions.height - shapeRef.current[selectedShapeId].height()));
+    const newX = Math.max(0, Math.min(e.target.x(), dimensions.width - shapeRef.current[selectedShapeId].width()));
+    const newY = Math.max(0, Math.min(e.target.y(), dimensions.height - shapeRef.current[selectedShapeId].height()));
     console.log({ newX, newY })
 
     setRectPosition({ x: newX, y: newY });
@@ -459,7 +473,7 @@ function Canvas({ url }) {
       context.drawImage(videoElement, 0, 0, canvasParentRef.current?.offsetWidth, canvasParentRef.current?.offsetHeight);
       layer.batchDraw();
     }
-  },[]);
+  }, []);
 
 
   useEffect(() => {
@@ -508,6 +522,13 @@ function Canvas({ url }) {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+
+  useImperativeHandle(ref, () => ({
+    shapes,
+    undo,
+    redo,
+    deleteShape,
+  }));
 
 
   return (
@@ -611,6 +632,7 @@ function Canvas({ url }) {
     </>
 
   );
-}
+})
+
 
 export default Canvas;
