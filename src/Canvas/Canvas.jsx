@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Stage, Layer, Rect, Transformer, Circle, Image } from "react-konva";
-import { set, throttle } from 'lodash';
+import { throttle } from 'lodash';
 import generateId from "../utils/generateId";
 import { VideoContext } from "../app/VideoPlayerContext";
 // import { redo, undo ,deleteShape} from "./utils";
@@ -41,7 +41,8 @@ const Rectangle = forwardRef(
       onDragMove,
       dragBoundFunc,
       currentWidth,
-      currentHeight
+      currentHeight,
+      onMouseEnter
     },
     ref
   ) => (
@@ -57,10 +58,9 @@ const Rectangle = forwardRef(
       draggable={draggable}
       onClick={onClick}
       onDragEnd={onDragEnd}
-      onMouseEnter={(e) => e.target.getStage().container().style.cursor = "pointer"}
-      onMouseLeave={(e) => e.target.getStage().container().style.cursor = "default"}
       onDragStart={onDragStart}
       onDragMove={onDragMove}
+      onMouseEnter={onMouseEnter}
       dragBoundFunc={dragBoundFunc}
       onTransformStart={onTransformStart}
       onTransformEnd={onTransformEnd}
@@ -102,17 +102,17 @@ const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
  */
 const Canvas = forwardRef(function Canvas({ children,
   url,
-  shape ,
-  hideAnnotations ,
-  lockEdit ,
-  initialData ,
-  externalSetData ,
-  externalOnSubmit ,
+  selectedShapeTool,
+  hideAnnotations,
+  lockEdit,
+  initialData,
+  externalSetData,
+  externalOnSubmit,
   annotationColor
 }, ref) {
-
+  
   // GENERAL STATES
-  const [shapes, setShapes] = useState(initialData|| []);
+  const [shapes, setShapes] = useState(initialData || []);
   const [isDrawing, setIsDrawing] = useState(false);
   const [newShape, setNewShape] = useState(null);
   const [selectedShapeId, setSelectedShapeId] = useState(null);
@@ -122,16 +122,10 @@ const Canvas = forwardRef(function Canvas({ children,
     width: 500,
     height: 300,
   });
+
   
-  
-  
-  // CONTEXT VALUES
-  // const values = React.useContext(VideoContext)
-  
-  // console.log({ dada: values })
-  // const annotationColor = "red";
-  // const lockEdit = false;
-  // const hideAnnotations = false;
+
+
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
@@ -154,7 +148,6 @@ const Canvas = forwardRef(function Canvas({ children,
   const [canvasParentHeight, setcanvasParentHeight] = useState(canvasParentRef?.current?.offsetHeight);
   
   
-  
   useEffect(() => {
     setVideoRefVal(videoRef)
 
@@ -171,19 +164,20 @@ const Canvas = forwardRef(function Canvas({ children,
     (e) => {
       if (isFullScreen) return;
       const stage = e.target.getStage();
+      if (!stage) return;
       const { x, y } = stage.getPointerPosition();
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
-        color: annotationColor || "red",
+        color: annotationColor,
         label: "",
         data: {},
         properties: {
           type: "rectangle",
           x,
           y,
-          width: 0,
-          height: 0,
+          width: 4,
+          height: 4,
           startTime,
           endTime: startTime + 0.5,
           scaleX: 1,
@@ -195,7 +189,7 @@ const Canvas = forwardRef(function Canvas({ children,
       setIsDrawing(true);
       
     },
-    [currentTime, isFullScreen]
+    [currentTime, isFullScreen, annotationColor]
   );
 
   /**
@@ -204,18 +198,17 @@ const Canvas = forwardRef(function Canvas({ children,
    * @param {Object} e - The mouse event object.
    */
 
-  const handleMouseMove =
-    throttle((e) => {
+  const handleMouseMove = ((e) => {
       if (isFullScreen) return;
       if (!isDrawing || !newShape) return;
 
       const stage = e.target.getStage();
-      
+      if (!stage) return;
       const { x, y } = stage.getPointerPosition();
 
       if (x !== newShape.properties.x || y !== newShape.properties.y) {
-        const width = x - newShape.properties.x;
-        const height = y - newShape.properties.y;
+        const width = Math.abs(x - newShape.properties.x );
+        const height = Math.abs(y - newShape.properties.y); 
 
         setNewShape((prevShape) => ({
           ...prevShape,
@@ -224,7 +217,7 @@ const Canvas = forwardRef(function Canvas({ children,
 
 
       }
-    }, 100)
+    })
 
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -505,10 +498,9 @@ const Canvas = forwardRef(function Canvas({ children,
 
   // lo
   const dragBoundFunc = (pos) => {
-
     const newX = Math.max(0, Math.min(pos.x, dimensions.width - shapeRef.current[selectedShapeId].width()));
     const newY = Math.max(0, Math.min(pos.y, dimensions.height - shapeRef.current[selectedShapeId].height()));
-   
+  
 
     return { x: newX, y: newY };
   };
@@ -516,7 +508,7 @@ const Canvas = forwardRef(function Canvas({ children,
 
     const newX = Math.max(0, Math.min(e.target.x(), dimensions.width - shapeRef.current[selectedShapeId].width()));
     const newY = Math.max(0, Math.min(e.target.y(), dimensions.height - shapeRef.current[selectedShapeId].height()));
-    
+   
 
     setRectPosition({ x: newX, y: newY });
 
@@ -591,6 +583,17 @@ const Canvas = forwardRef(function Canvas({ children,
     getSelectedAnnotationData
   }));
 
+  const handleMouseEnterInStage = (e) => {
+    if (!selectedShapeTool) {
+      e.target.getStage().container().style.cursor = "pointer";
+    }
+    else {
+      e.target.getStage().container().style.cursor = "crosshair"
+
+    }
+  }
+
+
   
 
   return (
@@ -603,7 +606,6 @@ const Canvas = forwardRef(function Canvas({ children,
             aspectRatio: "16/9",
             minHeight: 300,
             minWidth: 500,
-            border: "1px solid blue"
           }
         }>
         <Stage
@@ -613,9 +615,12 @@ const Canvas = forwardRef(function Canvas({ children,
           height={dimensions.height}
 
           style={{ backgroundColor: "black", display: hideAnnotations ? "none" : "block" }}
-          onMouseDown={!lockEdit && !isFullScreen ? handleMouseDown : null}
-          onMouseMove={!lockEdit && !isFullScreen ? handleMouseMove : null}
-          onMouseUp={!lockEdit && !isFullScreen ? handleMouseUp : null}
+          onMouseEnter={handleMouseEnterInStage}
+          onMouseLeave={(e) => e.target.getStage().container().style.cursor = "default"}
+
+          onMouseDown={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseDown : null}
+          onMouseMove={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseMove : null}
+          onMouseUp={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseUp : null}
           onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
 
 
@@ -646,17 +651,19 @@ const Canvas = forwardRef(function Canvas({ children,
                     {...shape}
                     scaleX={stageRef.current?.scaleX()}
                     scaleY={stageRef.current?.scaleY()}
-                    draggable={!isFullScreen && !lockEdit && shape.id === selectedShapeId}
-                    onClick={(!lockEdit && !isFullScreen) ? (e) => handleSelectShape(shape.id, e) : null}
+                    onMouseEnter={handleMouseEnterInStage}
+                    draggable={!selectedShapeTool && !isFullScreen && !lockEdit && shape.id === selectedShapeId}
+                    onClick={(!lockEdit && !isFullScreen && !selectedShapeTool) ? (e) => handleSelectShape(shape.id, e) : null}
                     onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
                     onDragStart={selectedShapeId ? handleDragStart : null}
                     onDragMove={selectedShapeId ? handleDragMove : null}
                     dragBoundFunc={dragBoundFunc}
                     onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
-                    color={shape.color}
+                    
                     onTransformStart={selectedShapeId ? handleTransformStart : null}
                     currentHeight={canvasParentHeight}
                     currentWidth={canvasParentWidth}
+
                   />
                 ) : (
                   <CircleShape
@@ -664,7 +671,7 @@ const Canvas = forwardRef(function Canvas({ children,
                     {...shape}
                     scaleX={stageRef.current?.scaleX()}
                     scaleY={stageRef.current?.scaleY()}
-                    color={shape.color}
+                    color={annotationColor}
                   />
                 )
               )}
@@ -675,7 +682,7 @@ const Canvas = forwardRef(function Canvas({ children,
                 width={newShape.properties.width}
                 height={newShape.properties.height}
                 stroke="violet"
-                opacity={0.5}
+                opacity={0.8}
               />
             )}
             <Transformer
@@ -696,6 +703,7 @@ const Canvas = forwardRef(function Canvas({ children,
     </>
 
   );
+
 })
 
 

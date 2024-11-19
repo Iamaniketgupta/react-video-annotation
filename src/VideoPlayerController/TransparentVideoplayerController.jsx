@@ -23,7 +23,6 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
   const hideTimeout = useRef(null);
 
   
-
   useEffect(() => {
     const handleMouseMove = (event) => {
       const container = canvasParentRef.current;
@@ -72,12 +71,15 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
   return (
     <div
       width={dimensions.width}
+      
       style={{
-        minWidth: 500,
-        height: "20px",
+        minWidth: dimensions.width,
+        height: "35px",
+        minHeight: "20px",
         background: "rgba(0, 0, 0, 0.4)",
         display: "flex",
         alignItems: "center",
+        margin:'4px 0',
         gap: "3px",
         padding: "10px 5px",
         color: "#fff",

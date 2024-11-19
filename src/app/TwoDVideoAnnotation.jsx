@@ -1,13 +1,11 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import { VideoProvider } from "./VideoPlayerContext";
 import Canvas from '../Canvas/Canvas';
 
 const TwoDVideoAnnotation = forwardRef(function TwoDVideoAnnotation({
   videoUrl,
-  shape,
+  selectedShapeTool,
   hideAnnotations,
-  videoWidth,
   lockEdit,
   onSubmit,
   data,
@@ -16,25 +14,22 @@ const TwoDVideoAnnotation = forwardRef(function TwoDVideoAnnotation({
 }, ref) {
   return (
 
-
     <div
       style={{
         padding: '0',
         position: 'relative',
-        minWidth: '500px',
-        minHeight: '300px',
       }}
     >
    
         <Canvas ref={ref}
           url={videoUrl}
-          shape={shape}
+          selectedShapeTool={selectedShapeTool}
           hideAnnotations={hideAnnotations || false}
           lockEdit={lockEdit || false}
           initialData={data}
           externalSetData={setData}
           externalOnSubmit={onSubmit}
-          annotationColor={annotationColor || "red"}
+          annotationColor={annotationColor || '#FF0000'}
         />
     </div>
   )
@@ -55,9 +50,8 @@ TwoDVideoAnnotation.defaultProps = {
 
 TwoDVideoAnnotation.propTypes = {
   videoUrl: PropTypes.string.isRequired,
-  shape: PropTypes.oneOf(['rectangle', 'circle', 'polygon']),
+  selectedShapeTool: PropTypes.oneOf(['rectangle', 'circle', 'polygon']),
   hideAnnotations: PropTypes.bool,
-  videoWidth: PropTypes.number,
   lockEdit: PropTypes.bool,
   onSubmit: PropTypes.func,
   data: PropTypes.arrayOf(
@@ -76,6 +70,8 @@ TwoDVideoAnnotation.propTypes = {
         endTime: PropTypes.number.isRequired, // End time in the video
         scaleX: PropTypes.number, // X scaling factor
         scaleY: PropTypes.number, // Y scaling factor
+        screenHeight: PropTypes.number,
+        screenWidth: PropTypes.number,
       }).isRequired,
     })
   ).isRequired,

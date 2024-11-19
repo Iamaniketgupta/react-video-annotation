@@ -12,9 +12,7 @@ const basicColors = [
   { name: "Black", value: "#000000" },
 ];
 
-function AnnotationTools() {
-  const [selectedColor, setSelectedColor] = useState(basicColors[0].value);
-  const [selectedTool, setSelectedTool] = useState(null);
+function AnnotationTools({ selectedTool, setSelectedTool, annotationColor, setAnnotationColor }) {
 
   return (
     <>
@@ -22,65 +20,61 @@ function AnnotationTools() {
       {/* Tool Buttons */}
       <div className="flex justify-center gap-2 bg-stone-700 p-2 rounded-full mb-4">
         <button
-          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${
-            selectedTool === "Cursor" ? "bg-stone-600" : "bg-stone-700"
-          } hover:bg-stone-600`}
-          onClick={() => setSelectedTool("Cursor")}
+          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${selectedTool === null ? "bg-stone-600" : "bg-stone-700"
+            } hover:bg-stone-600`}
+          onClick={() => setSelectedTool(null)}
         >
           <FaMousePointer size={18} />
         </button>
 
         <button
-          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${
-            selectedTool === "Rectangle" ? "bg-stone-600" : "bg-stone-700"
-          } hover:bg-stone-600`}
-          onClick={() => setSelectedTool("Rectangle")}
+          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${selectedTool === "rectangle" ? "bg-stone-600" : "bg-stone-700"
+            } hover:bg-stone-600`}
+          onClick={() => setSelectedTool("rectangle")}
         >
           <FaRegSquare size={18} />
         </button>
 
         <button
-          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${
-            selectedTool === "Circle" ? "bg-stone-600" : "bg-stone-700"
-          } hover:bg-stone-600`}
-          onClick={() => setSelectedTool("Circle")}
+          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${selectedTool === "circle" ? "bg-stone-600" : "bg-stone-700"
+            } hover:bg-stone-600`}
+          onClick={() => setSelectedTool("circle")}
         >
           <FaRegCircle size={18} />
         </button>
 
         <button
-          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${
-            selectedTool === "Line" ? "bg-stone-600" : "bg-stone-700"
-          } hover:bg-stone-600`}
-          onClick={() => setSelectedTool("Line")}
+          className={`flex flex-col items-center text-white p-2 rounded-lg transition ${selectedTool === "line" ? "bg-stone-600" : "bg-stone-700"
+            } hover:bg-stone-600`}
+          onClick={() => setSelectedTool("line")}
         >
           <FaSlash size={18} />
         </button>
-        
 
-         {/* Color Picker */}
-      <div className="bg-stone-700 p- rounded-xl ">
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedColor}
-            onChange={(e) => setSelectedColor(e.target.value)}
-            className="bg-stone-800 outline-none text-white text-xs p-2 rounded-lg cursor-pointer"
-          >
-            {basicColors.map((color) => (
-              <option key={color.value} value={color.value} className="bg-stone-800">
-                {color.name}
-              </option>
-            ))}
-          </select>
-          <div
-            className="w-4 h-4 rounded-full border-2 border-white"
-            style={{ backgroundColor: selectedColor }}
-          ></div>
+
+        {/* Color Picker */}
+        <div className="bg-stone-700 p- rounded-xl ">
+          <div className="flex items-center gap-3">
+            <select
+              value={annotationColor}
+              onChange={(e) => setAnnotationColor(e.target.value)}
+              className="bg-stone-800 outline-none text-white text-xs p-2 rounded-lg cursor-pointer"
+            >
+              {basicColors.map((color) => (
+                <option key={color.value} value={color.value} className="bg-stone-800">
+                  {color.name}
+                </option>
+              ))}
+            </select>
+            <div
+              className="w-4 h-4 rounded-full border-2 border-white"
+              style={{ backgroundColor: annotationColor }}
+            ></div>
+          </div>
         </div>
       </div>
-      </div>
 
-     
+
 
     </>
   );

@@ -1,3 +1,3 @@
-import TwoDVideoAnnotation from './app/TwoDVideoAnnotation';
+import TwoDVideoAnnotation from './app/index';
 
 export default TwoDVideoAnnotation;
