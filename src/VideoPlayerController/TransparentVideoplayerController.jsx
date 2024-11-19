@@ -4,7 +4,7 @@ import { CiMaximize2 } from "react-icons/ci";
 
 import { FaPauseCircle, FaPlayCircle } from "react-icons/fa";
 
-const TransparentVideoController = ({ playerRef ,dimensions}) => {
+const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) => {
   const {
     playing,
     played,
@@ -17,7 +17,7 @@ const TransparentVideoController = ({ playerRef ,dimensions}) => {
     handleFullScreen,
     formatTime,
 
-  } = useVideoController(playerRef);
+  } = useVideoController(playerRef , canvasParentRef);
 
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimeout = useRef(null);
@@ -25,17 +25,18 @@ const TransparentVideoController = ({ playerRef ,dimensions}) => {
   
   useEffect(() => {
     const handleMouseMove = (event) => {
-      const container = playerRef.current;
+      const container = canvasParentRef.current;
       const buffer = 10; // Distance from the edge in pixels
       if (container) {
         const { left, right, top } = container.getBoundingClientRect();
-
+        
 
         if (
           event.clientX <= left + buffer - 10 || // -10 is just a fudge factor
           event.clientX >= right - buffer ||
           event.clientY <= top + buffer
         ) {
+          
           setControlsVisible(false);
           return;
         }
@@ -52,7 +53,7 @@ const TransparentVideoController = ({ playerRef ,dimensions}) => {
       }
     };
 
-    const container = document.getElementById("main-container");
+    const container = canvasParentRef?.current;
 
     if (container) {
       container.addEventListener("mousemove", handleMouseMove);
@@ -64,7 +65,7 @@ const TransparentVideoController = ({ playerRef ,dimensions}) => {
       }
       clearTimeout(hideTimeout?.current);
     };
-  }, [playerRef]);
+  }, [canvasParentRef]);
 
 
   return (

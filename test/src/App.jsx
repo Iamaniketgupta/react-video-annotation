@@ -24,12 +24,12 @@ function App() {
 
       <TwoDVideoAnnotation
         ref={myref}
-        url="./video.mkv"
+        videoUrl="x.mp4"
         shape="rectangle"
         hideAnnotations={false}
         videoWidth={640}
         lockEdit={false}
-        annotationColor="blue"
+        annotationColor="pink"
         onSubmit={() => console.log("Data submitted")
 
         }

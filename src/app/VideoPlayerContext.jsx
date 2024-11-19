@@ -20,6 +20,7 @@ export const VideoProvider = ({
 
   console.log(annotationColor)
   
+  
   const setData = externalSetData || internalSetData;
 
   

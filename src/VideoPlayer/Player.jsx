@@ -21,7 +21,9 @@ const Player = forwardRef(function VideoElem(props, ref) {
         };
     }, [props?.parentref, props.url, ref]);
 
-    return <video ref={playerRef} {...props} controls={false} hidden />;
+    return <video style={{
+        aspectRatio:"16/9"
+    }} ref={playerRef} {...props} controls={false} hidden />;
 });
 export default Player;
 
