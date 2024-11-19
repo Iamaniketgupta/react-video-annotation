@@ -1,7 +1,3 @@
-import TwoDVideoAnnotation from './app/TwoDVideoAnnotation';
-import { undo , redo , deleteShape } from './Canvas/utils';
+import TwoDVideoAnnotation from './Canvas/Canvas';
 
 export default TwoDVideoAnnotation;
-export {
-    undo , redo, deleteShape
-}

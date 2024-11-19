@@ -1,34 +1,51 @@
-import React from 'react';
-import { VideoProvider } from './VideoPlayerContext';
-import ReactPlayer from '../VideoAnnotationPlayer/ReactPlayer';
+import React, { forwardRef } from 'react';
+import PropTypes from 'prop-types';
+import Canvas from '../Canvas/Canvas';
 
-const TwoDVideoAnnotation = ({
+const TwoDVideoAnnotation = forwardRef(function TwoDVideoAnnotation({
   videoUrl,
-  shape,
+  selectedShapeTool,
   hideAnnotations,
-  videoWidth,
   lockEdit,
-  onSubmit, 
+  onSubmit,
   data,
-  setData, 
+  setData,
   annotationColor
-}) => {
+}, ref) {
   return (
-    <VideoProvider
-      initialVideoUrl={videoUrl}
-      shape={shape}
-      hideAnnotations={hideAnnotations}
-      initialVideoWidth={videoWidth}
-      lockEdit={lockEdit}
-      initialData={data}
-      externalSetData={setData} 
-      externalOnSubmit={onSubmit}
-      annotationColor={annotationColor}
-    >
-      <ReactPlayer url={videoUrl} width={videoWidth} />
 
-    </VideoProvider>
-  );
+    <div
+      style={{
+        padding: '0',
+        position: 'relative',
+      }}
+    >
+   
+        <Canvas ref={ref}
+          url={videoUrl}
+          selectedShapeTool={selectedShapeTool}
+          hideAnnotations={hideAnnotations || false}
+          lockEdit={lockEdit || false}
+          initialData={data}
+          externalSetData={setData}
+          externalOnSubmit={onSubmit}
+          annotationColor={annotationColor || '#FF0000'}
+        />
+    </div>
+  )
 }
+);
+
+
+TwoDVideoAnnotation.defaultProps = {
+  shape: 'rectangle',
+  hideAnnotations: false,
+  videoWidth: 640,
+  lockEdit: false,
+  onSubmit: () => { },
+  data: [],
+  setData: () => { },
+  annotationColor: '#FF0000',
+};
 
 export default TwoDVideoAnnotation;
