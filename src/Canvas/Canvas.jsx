@@ -1,12 +1,24 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Stage, Layer, Rect, Transformer, Circle, Image } from "react-konva";
-import { throttle } from 'lodash';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+import {
+  Stage,
+  Layer,
+  Rect,
+  Transformer,
+  Circle,
+  Image,
+  Text,
+} from "react-konva";
+import { throttle } from "lodash";
 import generateId from "../utils/generateId";
-import { VideoContext } from "../app/VideoPlayerContext";
 // import { redo, undo ,deleteShape} from "./utils";
-import { Manager } from "../observerDesignPattern/ObserverDesignPattern";
-import ObserverSelectionInstance from "../observerDesignPattern/ObserverSelectionInstance";
 import Player from "../VideoPlayer/Player";
 import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
 import useVideoController from "../VideoPlayerController/UseVideoPlayerControllerHook";
@@ -42,16 +54,16 @@ const Rectangle = forwardRef(
       dragBoundFunc,
       currentWidth,
       currentHeight,
-      onMouseEnter
+      onMouseEnter,
     },
     ref
   ) => (
     <Rect
       ref={ref}
-      x={properties.x * (currentWidth/properties.screenWidth)}
-      y={properties.y * (currentHeight/properties.screenHeight)}
-      width={properties.width * (currentWidth/properties.screenWidth)}
-      height={properties.height * (currentHeight/properties.screenHeight)}
+      x={properties.x * (currentWidth / properties.screenWidth)}
+      y={properties.y * (currentHeight / properties.screenHeight)}
+      width={properties.width * (currentWidth / properties.screenWidth)}
+      height={properties.height * (currentHeight / properties.screenHeight)}
       shadowBlur={5}
       stroke={color}
       strokeWidth={2}
@@ -64,7 +76,6 @@ const Rectangle = forwardRef(
       dragBoundFunc={dragBoundFunc}
       onTransformStart={onTransformStart}
       onTransformEnd={onTransformEnd}
-
     />
   )
 );
@@ -100,17 +111,20 @@ const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
  * @param {boolean} isFullScreen - Boolean to determine if in full-screen mode.
  * @returns {JSX.Element} - Rendered canvas with shapes.
  */
-const Canvas = forwardRef(function Canvas({ children,
-  url,
-  selectedShapeTool,
-  hideAnnotations,
-  lockEdit,
-  initialData,
-  externalSetData,
-  externalOnSubmit,
-  annotationColor
-}, ref) {
-  
+const Canvas = forwardRef(function Canvas(
+  {
+    children,
+    url,
+    selectedShapeTool,
+    hideAnnotations,
+    lockEdit,
+    initialData,
+    externalSetData,
+    externalOnSubmit,
+    annotationColor,
+  },
+  ref
+) {
   // GENERAL STATES
   const [shapes, setShapes] = useState(initialData || []);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -123,9 +137,6 @@ const Canvas = forwardRef(function Canvas({ children,
     height: 300,
   });
 
-  
-
-
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
@@ -133,28 +144,30 @@ const Canvas = forwardRef(function Canvas({ children,
   const canvasParentRef = useRef(null);
   const layerRef = useRef(null);
   const videoRef = useRef(null);
-  
+
   // HOOK VALUES
-  const {
-    currentTime,
-    setCurrentTime,
-    isFullScreen
-  } = useVideoController(videoRefVal , canvasParentRef);
+  const { currentTime, setCurrentTime, isFullScreen } = useVideoController(
+    videoRefVal,
+    canvasParentRef
+  );
   // STACK STATES
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
-  
-  const [canvasParentWidth, setcanvasParentWidth] = useState(canvasParentRef?.current?.offsetWidth);
-  const [canvasParentHeight, setcanvasParentHeight] = useState(canvasParentRef?.current?.offsetHeight);
-  
-  
+
+  const [canvasParentWidth, setcanvasParentWidth] = useState(
+    canvasParentRef?.current?.offsetWidth
+  );
+  const [canvasParentHeight, setcanvasParentHeight] = useState(
+    canvasParentRef?.current?.offsetHeight
+  );
+
   useEffect(() => {
-    setVideoRefVal(videoRef)
+    setVideoRefVal(videoRef);
 
     return () => {
-      setVideoRefVal(null)
-    }
-  }, [videoRef])
+      setVideoRefVal(null);
+    };
+  }, [videoRef]);
   /**
    * Handle mouse down event to start drawing a new shape.
    *
@@ -183,11 +196,10 @@ const Canvas = forwardRef(function Canvas({ children,
           scaleX: 1,
           scaleY: 1,
           screenHeight: canvasParentHeight,
-          screenWidth: canvasParentWidth
+          screenWidth: canvasParentWidth,
         },
       });
       setIsDrawing(true);
-      
     },
     [currentTime, isFullScreen, annotationColor]
   );
@@ -198,26 +210,24 @@ const Canvas = forwardRef(function Canvas({ children,
    * @param {Object} e - The mouse event object.
    */
 
-  const handleMouseMove = ((e) => {
-      if (isFullScreen) return;
-      if (!isDrawing || !newShape) return;
+  const handleMouseMove = (e) => {
+    if (isFullScreen) return;
+    if (!isDrawing || !newShape) return;
 
-      const stage = e.target.getStage();
-      if (!stage) return;
-      const { x, y } = stage.getPointerPosition();
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const { x, y } = stage.getPointerPosition();
 
-      if (x !== newShape.properties.x || y !== newShape.properties.y) {
-        const width = Math.abs(x - newShape.properties.x );
-        const height = Math.abs(y - newShape.properties.y); 
+    if (x !== newShape.properties.x || y !== newShape.properties.y) {
+      const width = Math.abs(x - newShape.properties.x);
+      const height = Math.abs(y - newShape.properties.y);
 
-        setNewShape((prevShape) => ({
-          ...prevShape,
-          properties: { ...prevShape.properties, width, height },
-        }));
-
-
-      }
-    })
+      setNewShape((prevShape) => ({
+        ...prevShape,
+        properties: { ...prevShape.properties, width, height },
+      }));
+    }
+  };
 
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -225,7 +235,6 @@ const Canvas = forwardRef(function Canvas({ children,
    * @param {Object} e - The mouse event object.
    */
   const handleMouseUp = useCallback(() => {
-
     if (newShape) {
       setHistory((prevHistory) => [...prevHistory, shapes]);
       setRedoStack([]);
@@ -235,7 +244,6 @@ const Canvas = forwardRef(function Canvas({ children,
       setNewShape(null);
     }
   }, [newShape, shapes]);
-
 
   /**
    * Handle shape selection by setting the selected shape's ID.
@@ -255,8 +263,9 @@ const Canvas = forwardRef(function Canvas({ children,
    */
   const handleStageClick = (e) => {
     if (isFullScreen) return;
-    
-    if (e.target === e.target.getStage()) {
+    // Ensure the click isn't on a shape
+    console.log({ e: e.target });
+    if (e.target === e.target.getStage() || e.target.className === "Image") {
       setSelectedShapeId(null);
     }
   };
@@ -280,7 +289,7 @@ const Canvas = forwardRef(function Canvas({ children,
    */
   const handleDragStart = (e) => {
     e.target.getStage().container().style.cursor = "move";
-  }
+  };
 
   /**
    * Handle drag end event to update the shape's position.
@@ -288,20 +297,23 @@ const Canvas = forwardRef(function Canvas({ children,
    * @param {Object} e - The event object.
    * @param {string} shapeId - The ID of the shape being dragged.
    */
-  const handleDragEnd = useCallback((e, shapeId) => {
-    const { x, y } = rectPosititon;
-    
-    if (x !== null && y !== null) {
-      setShapes((prevShapes) =>
-        prevShapes.map((shape) =>
-          shape.id === shapeId
-            ? { ...shape, properties: { ...shape.properties, x, y } }
-            : shape
-        )
-      );
-    }
-    e.target.getStage().container().style.cursor = "default";
-  }, [rectPosititon]);
+  const handleDragEnd = useCallback(
+    (e, shapeId) => {
+      const { x, y } = rectPosititon;
+
+      if (x !== null && y !== null) {
+        setShapes((prevShapes) =>
+          prevShapes.map((shape) =>
+            shape.id === shapeId
+              ? { ...shape, properties: { ...shape.properties, x, y } }
+              : shape
+          )
+        );
+      }
+      e.target.getStage().container().style.cursor = "default";
+    },
+    [rectPosititon]
+  );
 
   /**
    * Handle transform end event to update the shape's properties.
@@ -329,30 +341,27 @@ const Canvas = forwardRef(function Canvas({ children,
           prevShapes.map((shape) =>
             shape.id === shapeId
               ? {
-                ...shape,
-                properties: {
-                  ...shape.properties,
-                  x: node.x(),
-                  y: node.y(),
-                  width: node.width() * scaleX,
-                  height: node.height() * scaleY,
-                },
-              }
+                  ...shape,
+                  properties: {
+                    ...shape.properties,
+                    x: node.x(),
+                    y: node.y(),
+                    width: node.width() * scaleX,
+                    height: node.height() * scaleY,
+                  },
+                }
               : shape
           )
         );
-
       }
-
     },
     [isFullScreen]
   );
 
   /**
-     * Handle UNDO.
-     */
+   * Handle UNDO.
+   */
   const undo = useCallback(() => {
-
     if (history.length > 0) {
       const lastState = history[history.length - 1];
       setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
@@ -360,7 +369,6 @@ const Canvas = forwardRef(function Canvas({ children,
       setHistory((prevHistory) => prevHistory.slice(0, -1));
     }
   }, [history, shapes]);
-
 
   /**
    * Handle REDO.
@@ -374,15 +382,13 @@ const Canvas = forwardRef(function Canvas({ children,
     }
   }, [redoStack, shapes]);
 
-
-  
   /**
    * Set the data of the selected shape.
    * @param {Object} data - The data to be set.
    */
   const setSelectedAnnotationData = useCallback((data) => {
-    if(!selectedShapeId){
-      throw new Error("Select a shape first");     
+    if (!selectedShapeId) {
+      throw new Error("Select a shape first");
     }
 
     const shape = shapes.find((shape) => shape.id === selectedShapeId);
@@ -390,37 +396,29 @@ const Canvas = forwardRef(function Canvas({ children,
       shape.properties.data = data;
       setShapes([...shapes]);
     }
-  })
+  });
 
   /**
    * Get the data of the selected shape.
    * @returns {any} The data of the selected shape.
-  */
+   */
   const getSelectedAnnotationData = useCallback(() => {
-    if(!selectedShapeId){
+    if (!selectedShapeId) {
       throw new Error("Select a shape first");
     }
     const shape = shapes.find((shape) => shape.id === selectedShapeId);
     if (shape) {
       return shape?.properties?.data;
     }
-  })
-  
-
-  // useEffect(() => {
-  //   if(initialData){
-  //     setShapes(initialData);  
-  //   }  
-  // }, [initialData])
-  
-  
+  });
 
   useEffect(() => {
     setcanvasParentHeight(canvasParentRef?.current?.offsetHeight);
     setcanvasParentWidth(canvasParentRef?.current?.offsetWidth);
-    
-  }, [canvasParentRef?.current?.offsetHeight , canvasParentRef?.current?.offsetWidth]);
-  
+  }, [
+    canvasParentRef?.current?.offsetHeight,
+    canvasParentRef?.current?.offsetWidth,
+  ]);
 
   /**
    * UNDO/REDO shortcut key events
@@ -428,24 +426,22 @@ const Canvas = forwardRef(function Canvas({ children,
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
         undo();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
         redo();
       }
-      if (e.key === 'Delete') {
-        deleteShape()
+      if (e.key === "Delete") {
+        deleteShape();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [undo, redo, deleteShape]);
-
-
 
   /**
    * Synchronize the transformer with the selected shape when the selected shape changes.
@@ -470,48 +466,65 @@ const Canvas = forwardRef(function Canvas({ children,
     return () => video?.removeEventListener("timeupdate", handleTimeUpdate);
   }, [videoRef]);
 
-
-  const isVisible = useCallback((shapeId) => {
-    const shape = shapes.find((shape) => shape.id === shapeId);
-    return (
-      currentTime >= shape?.properties?.startTime &&
-      currentTime <= shape?.properties?.endTime
-    );
-  }, [currentTime, shapes]);
+  const isVisible = useCallback(
+    (shapeId) => {
+      const shape = shapes.find((shape) => shape.id === shapeId);
+      return (
+        currentTime >= shape?.properties?.startTime &&
+        currentTime <= shape?.properties?.endTime
+      );
+    },
+    [currentTime, shapes]
+  );
 
   useEffect(() => {
     if (!videoRef.current?.paused || lockEdit || !isVisible(selectedShapeId)) {
-      setSelectedShapeId(null)
+      setSelectedShapeId(null);
     }
-  }, [videoRef.current?.paused, lockEdit, currentTime, isVisible, selectedShapeId]);
-
-
-
-  useEffect(() => {
-    const observer = new Manager(undo, redo, deleteShape);
-    ObserverSelectionInstance?.addObserver(observer);
-
-    return () => {
-      ObserverSelectionInstance?.removeObserver(observer);
-    };
-  }, [history, redo, undo, deleteShape]);
+  }, [
+    videoRef.current?.paused,
+    lockEdit,
+    currentTime,
+    isVisible,
+    selectedShapeId,
+  ]);
 
   // lo
   const dragBoundFunc = (pos) => {
-    const newX = Math.max(0, Math.min(pos.x, dimensions.width - shapeRef.current[selectedShapeId].width()));
-    const newY = Math.max(0, Math.min(pos.y, dimensions.height - shapeRef.current[selectedShapeId].height()));
-  
+    const newX = Math.max(
+      0,
+      Math.min(
+        pos.x,
+        dimensions.width - shapeRef.current[selectedShapeId].width()
+      )
+    );
+    const newY = Math.max(
+      0,
+      Math.min(
+        pos.y,
+        dimensions.height - shapeRef.current[selectedShapeId].height()
+      )
+    );
 
     return { x: newX, y: newY };
   };
   const handleDragMove = (e) => {
-
-    const newX = Math.max(0, Math.min(e.target.x(), dimensions.width - shapeRef.current[selectedShapeId].width()));
-    const newY = Math.max(0, Math.min(e.target.y(), dimensions.height - shapeRef.current[selectedShapeId].height()));
-   
+    const newX = Math.max(
+      0,
+      Math.min(
+        e.target.x(),
+        dimensions.width - shapeRef.current[selectedShapeId].width()
+      )
+    );
+    const newY = Math.max(
+      0,
+      Math.min(
+        e.target.y(),
+        dimensions.height - shapeRef.current[selectedShapeId].height()
+      )
+    );
 
     setRectPosition({ x: newX, y: newY });
-
   };
 
   const drawVideoFrame = useCallback(() => {
@@ -519,13 +532,23 @@ const Canvas = forwardRef(function Canvas({ children,
     const videoElement = videoRef.current;
 
     if (videoElement && layer) {
-      const context = layer.getCanvas().getContext('2d');
-      context.clearRect(0, 0, layer.getCanvas().width, layer.getCanvas().height);
-      context.drawImage(videoElement, 0, 0, canvasParentRef.current?.offsetWidth, canvasParentRef.current?.offsetHeight);
+      const context = layer.getCanvas().getContext("2d");
+      context.clearRect(
+        0,
+        0,
+        layer.getCanvas().width,
+        layer.getCanvas().height
+      );
+      context.drawImage(
+        videoElement,
+        0,
+        0,
+        canvasParentRef.current?.offsetWidth,
+        canvasParentRef.current?.offsetHeight
+      );
       layer.batchDraw();
     }
   }, []);
-
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -536,26 +559,25 @@ const Canvas = forwardRef(function Canvas({ children,
       animationFrameId = requestAnimationFrame(updateFrame);
     };
 
-    videoElement?.addEventListener('play', () => {
+    videoElement?.addEventListener("play", () => {
       animationFrameId = requestAnimationFrame(updateFrame);
     });
 
-    videoElement?.addEventListener('pause', () => {
+    videoElement?.addEventListener("pause", () => {
       cancelAnimationFrame(animationFrameId);
     });
 
-    videoElement?.addEventListener('ended', () => {
+    videoElement?.addEventListener("ended", () => {
       cancelAnimationFrame(animationFrameId);
     });
 
     return () => {
-      videoElement?.removeEventListener('play', updateFrame);
-      videoElement?.removeEventListener('pause', updateFrame);
-      videoElement?.removeEventListener('ended', updateFrame);
+      videoElement?.removeEventListener("play", updateFrame);
+      videoElement?.removeEventListener("pause", updateFrame);
+      videoElement?.removeEventListener("ended", updateFrame);
       cancelAnimationFrame(animationFrameId);
     };
   }, [drawVideoFrame, videoRef]);
-
 
   useEffect(() => {
     const updateSize = () => {
@@ -569,10 +591,9 @@ const Canvas = forwardRef(function Canvas({ children,
     };
 
     updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, []);
-
 
   useImperativeHandle(ref, () => ({
     shapes,
@@ -580,60 +601,86 @@ const Canvas = forwardRef(function Canvas({ children,
     redo,
     deleteShape,
     setSelectedAnnotationData,
-    getSelectedAnnotationData
+    getSelectedAnnotationData,
   }));
 
   const handleMouseEnterInStage = (e) => {
     if (!selectedShapeTool) {
       e.target.getStage().container().style.cursor = "pointer";
+    } else {
+      e.target.getStage().container().style.cursor = "crosshair";
     }
-    else {
-      e.target.getStage().container().style.cursor = "crosshair"
-
-    }
-  }
-
-
-  
+  };
 
   return (
     <>
       <div
         ref={canvasParentRef}
-        style={
-          {
-            maxWidth: window.innerWidth,
-            aspectRatio: "16/9",
-            minHeight: 300,
-            minWidth: 500,
-          }
-        }>
+        style={{
+          maxWidth: window.innerWidth,
+          aspectRatio: "16/9",
+          minHeight: 300,
+          minWidth: 500,
+        }}
+      >
         <Stage
-
           ref={stageRef}
           width={dimensions.width}
           height={dimensions.height}
-
-          style={{ backgroundColor: "black", display: hideAnnotations ? "none" : "block" }}
+          style={{
+            backgroundColor: "black",
+            display: hideAnnotations ? "none" : "block",
+          }}
           onMouseEnter={handleMouseEnterInStage}
-          onMouseLeave={(e) => e.target.getStage().container().style.cursor = "default"}
-
-          onMouseDown={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseDown : null}
-          onMouseMove={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseMove : null}
-          onMouseUp={!lockEdit && !isFullScreen && selectedShapeTool ? handleMouseUp : null}
+          onMouseLeave={(e) =>
+            (e.target.getStage().container().style.cursor = "default")
+          }
+          onMouseDown={
+            !lockEdit && !isFullScreen && selectedShapeTool
+              ? handleMouseDown
+              : null
+          }
+          onMouseMove={
+            !lockEdit && !isFullScreen && selectedShapeTool
+              ? handleMouseMove
+              : null
+          }
+          onMouseUp={
+            !lockEdit && !isFullScreen && selectedShapeTool
+              ? handleMouseUp
+              : null
+          }
           onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
-
-
         >
-          <Layer
-            ref={layerRef}
-          >
+          <Layer ref={layerRef}>
             <Image
               image={videoRef?.current}
               width={dimensions.width}
               height={dimensions.height}
-
             />
+
+            {selectedShapeId &&
+              shapes.find((shape) => shape.id === selectedShapeId) && (
+                <Text
+                  text="❌"
+                  x={
+                    shapes.find((shape) => shape.id === selectedShapeId)
+                      ?.properties?.x +
+                    shapes.find((shape) => shape.id === selectedShapeId)
+                      ?.properties?.width +
+                    5
+                  }
+                  y={
+                    shapes.find((shape) => shape.id === selectedShapeId)
+                      ?.properties?.y - 15
+                  }
+                  fill="red"
+                  strokeWidth={3}
+                  shadowColor="white"
+                  fontSize={10}
+                  onClick={(e) => deleteShape(e)}
+                />
+              )}
 
             {shapes
               .filter(
@@ -652,18 +699,33 @@ const Canvas = forwardRef(function Canvas({ children,
                     scaleX={stageRef.current?.scaleX()}
                     scaleY={stageRef.current?.scaleY()}
                     onMouseEnter={handleMouseEnterInStage}
-                    draggable={!selectedShapeTool && !isFullScreen && !lockEdit && shape.id === selectedShapeId}
-                    onClick={(!lockEdit && !isFullScreen && !selectedShapeTool) ? (e) => handleSelectShape(shape.id, e) : null}
-                    onDragEnd={selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null}
+                    draggable={
+                      !selectedShapeTool &&
+                      !isFullScreen &&
+                      !lockEdit &&
+                      shape.id === selectedShapeId
+                    }
+                    onClick={
+                      !lockEdit && !isFullScreen && !selectedShapeTool
+                        ? (e) => handleSelectShape(shape.id, e)
+                        : null
+                    }
+                    onDragEnd={
+                      selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null
+                    }
                     onDragStart={selectedShapeId ? handleDragStart : null}
                     onDragMove={selectedShapeId ? handleDragMove : null}
                     dragBoundFunc={dragBoundFunc}
-                    onTransformEnd={selectedShapeId ? (e) => handleTransformEnd(e, shape.id) : null}
-                    
-                    onTransformStart={selectedShapeId ? handleTransformStart : null}
+                    onTransformEnd={
+                      selectedShapeId
+                        ? (e) => handleTransformEnd(e, shape.id)
+                        : null
+                    }
+                    onTransformStart={
+                      selectedShapeId ? handleTransformStart : null
+                    }
                     currentHeight={canvasParentHeight}
                     currentWidth={canvasParentWidth}
-
                   />
                 ) : (
                   <CircleShape
@@ -691,20 +753,19 @@ const Canvas = forwardRef(function Canvas({ children,
               rotateEnabled={false}
               anchorSize={7}
               anchorCornerRadius={10}
-
             />
           </Layer>
         </Stage>
       </div>
 
-      <Player url={url}
-        ref={videoRef} parentref={canvasParentRef} hidden />
-      <TransparentVideoController playerRef={videoRef} dimensions={dimensions} canvasParentRef={canvasParentRef} />
+      <Player url={url} ref={videoRef} parentref={canvasParentRef} hidden />
+      <TransparentVideoController
+        playerRef={videoRef}
+        dimensions={dimensions}
+        canvasParentRef={canvasParentRef}
+      />
     </>
-
   );
-
-})
-
+});
 
 export default Canvas;

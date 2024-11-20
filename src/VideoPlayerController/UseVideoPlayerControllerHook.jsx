@@ -7,6 +7,7 @@ const useVideoController = (playerRef,canvasParentRef) => {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // State for mute/unmute
 
 
   useEffect(() => {
@@ -88,6 +89,15 @@ const useVideoController = (playerRef,canvasParentRef) => {
     return `${minutes}:${seconds}`;
   };
 
+
+  const handleMuteUnmute = () => {
+    const player = playerRef.current;
+    if (player) {
+      player.muted = !isMuted; // Toggle mute state on the video element
+      setIsMuted(!isMuted); // Update the state
+    }
+  };
+
   useEffect(() => {
     const onFullScreenChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
@@ -99,8 +109,7 @@ const useVideoController = (playerRef,canvasParentRef) => {
       document.removeEventListener("fullscreenchange", onFullScreenChange);
     };
   }, []);
-  
-  console.log({isFullScreen})
+
   return {
     playing,
     played,
@@ -113,7 +122,9 @@ const useVideoController = (playerRef,canvasParentRef) => {
     handleFullScreen,
     formatTime,
     setCurrentTime,
-    isFullScreen
+    isFullScreen,
+    handleMuteUnmute,
+    isMuted
   };
 };
 

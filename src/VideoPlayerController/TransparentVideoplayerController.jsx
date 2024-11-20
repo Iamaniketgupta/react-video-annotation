@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import useVideoController from "./UseVideoPlayerControllerHook";
-import { CiMaximize2 } from "react-icons/ci";
+import { ImVolumeMute } from "react-icons/im";
+import { ImVolumeMute2 } from "react-icons/im";
 
 import { FaPauseCircle, FaPlayCircle } from "react-icons/fa";
 
-const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) => {
+const TransparentVideoController = ({
+  playerRef,
+  dimensions,
+  canvasParentRef,
+}) => {
   const {
     playing,
     played,
@@ -16,62 +21,13 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
     handleSpeedChange,
     handleFullScreen,
     formatTime,
-
-  } = useVideoController(playerRef , canvasParentRef);
-
-  const [controlsVisible, setControlsVisible] = useState(true);
-  const hideTimeout = useRef(null);
-
-  
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      const container = canvasParentRef.current;
-      const buffer = 10; // Distance from the edge in pixels
-      if (container) {
-        const { left, right, top } = container.getBoundingClientRect();
-        
-
-        if (
-          event.clientX <= left + buffer - 10 || // -10 is just a fudge factor
-          event.clientX >= right - buffer ||
-          event.clientY <= top + buffer
-        ) {
-          
-          setControlsVisible(false);
-          return;
-        }
-
-        // Show controls if not near boundary
-        setControlsVisible(true);
-
-        // Reset the timeout to hide controls after 3 seconds
-        if (hideTimeout.current) {
-          clearTimeout(hideTimeout.current);
-        }
-
-        hideTimeout.current = setTimeout(() => setControlsVisible(false), 3000);
-      }
-    };
-
-    const container = canvasParentRef?.current;
-
-    if (container) {
-      container.addEventListener("mousemove", handleMouseMove);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("mousemove", handleMouseMove);
-      }
-      clearTimeout(hideTimeout?.current);
-    };
-  }, [canvasParentRef]);
-
+    isMuted,
+    handleMuteUnmute,
+  } = useVideoController(playerRef, canvasParentRef);
 
   return (
     <div
       width={dimensions.width}
-      
       style={{
         minWidth: dimensions.width,
         height: "35px",
@@ -79,29 +35,24 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
         background: "rgba(0, 0, 0, 0.4)",
         display: "flex",
         alignItems: "center",
-        margin:'4px 0',
+        margin: "4px 0",
         gap: "3px",
         padding: "10px 5px",
         color: "#fff",
         transition: "opacity 0.5s",
-        opacity: controlsVisible ? 1 : 0,
-        pointerEvents: controlsVisible ? "auto" : "none",
       }}
     >
-      <div onClick={handlePlayPause} style={{ fontSize: "12px", cursor: "pointer", margin: "0 10px" }}>
-        {playing ?
-          <FaPauseCircle size={25} />
-          :
-          <FaPlayCircle size={25} />
-        }
+      <div
+        onClick={handlePlayPause}
+        style={{ fontSize: "12px", cursor: "pointer", margin: "0 10px" }}
+      >
+        {playing ? <FaPauseCircle size={25} /> : <FaPlayCircle size={25} />}
       </div>
-
 
       <input
         type="range"
         min={0}
         max={1}
-
         step={0.01}
         value={played}
         onChange={(e) => handleSeekChange(parseFloat(e.target.value))}
@@ -115,7 +66,6 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
       <span style={{ marginRight: "10px", fontSize: "14px" }}>
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
-
 
       <select
         onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
@@ -138,18 +88,32 @@ const TransparentVideoController = ({ playerRef ,dimensions , canvasParentRef}) 
         <option value={2}>2x</option>
       </select>
 
-
-      <CiMaximize2
-        onClick={handleFullScreen}
-        style={{
-          color: "#fff",
-          cursor: "pointer",
-          fontSize: "18px",
-          marginRight: "10px",
-        }}
-       />
-   
-    </div >
+      {isMuted ? (
+        <>
+          <ImVolumeMute2
+            onClick={handleMuteUnmute}
+            style={{
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: "18px",
+              marginRight: "10px",
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <ImVolumeMute
+            onClick={handleMuteUnmute}
+            style={{
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: "18px",
+              marginRight: "10px",
+            }}
+          />
+        </>
+      )}
+    </div>
   );
 };
 
