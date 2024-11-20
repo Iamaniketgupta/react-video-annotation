@@ -68,11 +68,11 @@ function App() {
                   setAnnotationColor={setAnnotationColor}
                 />
 
-                {/* Data Form
+                {/* Data Form */}
                 <DataForm />
 
                 {/* Annotation List */}
-                {/* <AnnotationsList allAnnotations={playerRef.current?.shapes || []}/> */} */}
+                {/* <AnnotationsList allAnnotations={playerRef.current?.shapes || []}/> */}
 
               </>
           }
