@@ -144,6 +144,8 @@ const Canvas = forwardRef(function Canvas(
   const canvasParentRef = useRef(null);
   const layerRef = useRef(null);
   const videoRef = useRef(null);
+  const konvaImageRef = useRef(null);
+
 
   // HOOK VALUES
   const { currentTime, setCurrentTime, isFullScreen } = useVideoController(
@@ -341,15 +343,15 @@ const Canvas = forwardRef(function Canvas(
           prevShapes.map((shape) =>
             shape.id === shapeId
               ? {
-                  ...shape,
-                  properties: {
-                    ...shape.properties,
-                    x: node.x(),
-                    y: node.y(),
-                    width: node.width() * scaleX,
-                    height: node.height() * scaleY,
-                  },
-                }
+                ...shape,
+                properties: {
+                  ...shape.properties,
+                  x: node.x(),
+                  y: node.y(),
+                  width: node.width() * scaleX,
+                  height: node.height() * scaleY,
+                },
+              }
               : shape
           )
         );
@@ -527,57 +529,42 @@ const Canvas = forwardRef(function Canvas(
     setRectPosition({ x: newX, y: newY });
   };
 
-  const drawVideoFrame = useCallback(() => {
-    const layer = layerRef.current;
-    const videoElement = videoRef.current;
 
-    if (videoElement && layer) {
-      const context = layer.getCanvas().getContext("2d");
-      context.clearRect(
-        0,
-        0,
-        layer.getCanvas().width,
-        layer.getCanvas().height
-      );
-      context.drawImage(
-        videoElement,
-        0,
-        0,
-        canvasParentRef.current?.offsetWidth,
-        canvasParentRef.current?.offsetHeight
-      );
-      layer.batchDraw();
-    }
-  }, []);
+
 
   useEffect(() => {
-    const videoElement = videoRef.current;
-    let animationFrameId;
+    const video = videoRef.current;
+    const konvaImage = konvaImageRef.current;
 
-    const updateFrame = () => {
-      drawVideoFrame();
-      animationFrameId = requestAnimationFrame(updateFrame);
+
+    const updateCanvas = () => {
+      if (konvaImage && video) {
+        konvaImage.image(video);
+        konvaImage.getLayer().batchDraw();
+      }
+      requestAnimationFrame(updateCanvas);
     };
 
-    videoElement?.addEventListener("play", () => {
-      animationFrameId = requestAnimationFrame(updateFrame);
+    if (video) {
+      video.play();
+      updateCanvas();
+    }
+
+    video?.addEventListener("play", () => {
+      video.play();
     });
 
-    videoElement?.addEventListener("pause", () => {
-      cancelAnimationFrame(animationFrameId);
-    });
-
-    videoElement?.addEventListener("ended", () => {
-      cancelAnimationFrame(animationFrameId);
+    video?.addEventListener("pause", () => {
+      video.pause()
     });
 
     return () => {
-      videoElement?.removeEventListener("play", updateFrame);
-      videoElement?.removeEventListener("pause", updateFrame);
-      videoElement?.removeEventListener("ended", updateFrame);
-      cancelAnimationFrame(animationFrameId);
+      video.pause();
     };
-  }, [drawVideoFrame, videoRef]);
+  }, []);
+
+
+  const [imagedim,setImgDim]=useState(dimensions) 
 
   useEffect(() => {
     const updateSize = () => {
@@ -587,6 +574,12 @@ const Canvas = forwardRef(function Canvas(
           width: offsetWidth,
           height: offsetHeight,
         });
+        setImgDim(
+          {
+            width: offsetWidth,
+            height: offsetHeight,
+          }
+        )
       }
     };
 
@@ -654,9 +647,10 @@ const Canvas = forwardRef(function Canvas(
         >
           <Layer ref={layerRef}>
             <Image
+              ref={konvaImageRef}
               image={videoRef?.current}
-              width={dimensions.width}
-              height={dimensions.height}
+              width={imagedim.width}
+              height={imagedim.height}
             />
 
             {selectedShapeId &&

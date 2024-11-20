@@ -20,14 +20,16 @@ function App() {
 
 
       {/* Tools */}
-      <div className=" rounded-full mt-4 flex items-center justify-between w-[95%] mx-auto h-14 bg-stone-800 px-4 shadow-md">
+      <div className=" rounded-full mt-2 py-2 flex items-center justify-between w-[95%]  mx-auto h-14 bg-stone-800 px-4 shadow-md">
         <Tools playertools={playerRef}
         />
       </div>
 
-      <div className="flex flex-row gap-3 h-full w-[99%] my-2 mx-2">
+      <div className="flex flex-row gap-3  p-4 overflow-y-auto">
         {/* Video Player */}
-        <div className="bg-stone-900 flex-1 rounded-3xl shadow-lg p-5 m-2 overflow-auto">
+        <div className="bg-stone-900 flex-1 rounded-3xl p-2  max-h-[85vh]">
+          <div className="w-[95%] mx-auto ">
+
           <TwoDVideoAnnotation
             ref={playerRef}
             videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -41,12 +43,14 @@ function App() {
             lockEdit={false}
             onSubmit={() => { }}
           />
+          </div>
         </div>
 
 
 
         {/* Annotation Tools */}
-        <div className="relative bg-stone-800 w-[400px] rounded-3xl shadow-lg m-2  pt-4 px-4  overflow-auto">
+        <div className="relative bg-stone-800 w-[400px] rounded-3xl shadow-lg m-2  pt-4 px-4  overflow-y-auto"
+        style={{scrollbarWidth:"none"}}>
           <div className=" absolute top-4 right-4">
             <button
               onClick={() => setShowSettings(!showSettings)}
