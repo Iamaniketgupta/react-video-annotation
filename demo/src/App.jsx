@@ -28,18 +28,14 @@ function App() {
       <div className="flex flex-row gap-3  p-4 overflow-y-auto">
         {/* Video Player */}
         <div className="bg-stone-900 flex-1 rounded-3xl p-2  max-h-[85vh]">
-          <div className="w-[95%] mx-auto ">
+          <div className="w-[90%] mx-auto ">
 
           <TwoDVideoAnnotation
             ref={playerRef}
-            videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            videoUrl="https://videos.pexels.com/video-files/6804117/6804117-sd_960_506_25fps.mp4"
             selectedShapeTool={selectedTool}
             hideAnnotations={false}
             annotationColor={annotationColor}
-            videoOptions={{
-              muted: false,
-              autoPlay: true
-            }}
             lockEdit={false}
             onSubmit={() => { }}
           />
@@ -72,11 +68,11 @@ function App() {
                   setAnnotationColor={setAnnotationColor}
                 />
 
-                {/* Data Form */}
+                {/* Data Form
                 <DataForm />
 
                 {/* Annotation List */}
-                <AnnotationsList allAnnotations={playerRef.current?.shapes || []}/>
+                {/* <AnnotationsList allAnnotations={playerRef.current?.shapes || []}/> */} */}
 
               </>
           }

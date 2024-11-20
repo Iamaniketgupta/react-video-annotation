@@ -23,7 +23,7 @@ const Player = forwardRef(function VideoElem(props, ref) {
 
     return <video style={{
         aspectRatio:"16/9"
-    }} ref={playerRef} {...props} controls={false} hidden />;
+    }} ref={playerRef} {...props} preload='auto' controls={false} width={"100%"} hidden />;
 });
 export default Player;
 

@@ -181,6 +181,7 @@ const Canvas = forwardRef(function Canvas(
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
+      // console.log({x,y})
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
@@ -212,24 +213,24 @@ const Canvas = forwardRef(function Canvas(
    * @param {Object} e - The mouse event object.
    */
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = throttle((e) => {
     if (isFullScreen) return;
     if (!isDrawing || !newShape) return;
 
     const stage = e.target.getStage();
     if (!stage) return;
     const { x, y } = stage.getPointerPosition();
-
+// console.log({x,y})
     if (x !== newShape.properties.x || y !== newShape.properties.y) {
-      const width = Math.abs(x - newShape.properties.x);
-      const height = Math.abs(y - newShape.properties.y);
+      const width = (x - newShape.properties.x);
+      const height = (y - newShape.properties.y);
 
       setNewShape((prevShape) => ({
         ...prevShape,
-        properties: { ...prevShape.properties, width, height },
+        properties: { ...prevShape?.properties, width, height },
       }));
     }
-  };
+  }, 100);
 
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -265,8 +266,7 @@ const Canvas = forwardRef(function Canvas(
    */
   const handleStageClick = (e) => {
     if (isFullScreen) return;
-    // Ensure the click isn't on a shape
-    console.log({ e: e.target });
+
     if (e.target === e.target.getStage() || e.target.className === "Image") {
       setSelectedShapeId(null);
     }
@@ -546,7 +546,6 @@ const Canvas = forwardRef(function Canvas(
     };
 
     if (video) {
-      video.play();
       updateCanvas();
     }
 
@@ -559,12 +558,12 @@ const Canvas = forwardRef(function Canvas(
     });
 
     return () => {
-      video.pause();
+      video?.pause();
     };
   }, []);
 
 
-  const [imagedim,setImgDim]=useState(dimensions) 
+  const [imagedim, setImgDim] = useState(dimensions)
 
   useEffect(() => {
     const updateSize = () => {
