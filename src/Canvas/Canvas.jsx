@@ -15,6 +15,7 @@ import {
   Circle,
   Image,
   Text,
+  Line,
 } from "react-konva";
 import { throttle } from "lodash";
 import generateId from "../utils/generateId";
@@ -83,24 +84,116 @@ const Rectangle = forwardRef(
 Rectangle.displayName = "Rectangle";
 
 /**
- * CircleShape component renders a circle shape on the canvas.
+ * Circle component renders a circle shape on the canvas.
  *
- * @param {number} x - X position of the circle.
- * @param {number} y - Y position of the circle.
- * @param {number} radius - Radius of the circle.
- * @param {string} color - Fill color of the circle.
+ * @param {Object} properties - Shape properties (x, y, radius, screenWidth, screenHeight).
  * @param {number} scaleX - Horizontal scale factor.
  * @param {number} scaleY - Vertical scale factor.
+ * @param {string} color - Stroke color of the circle.
+ * @param {boolean} draggable - If true, circle can be dragged.
+ * @param {function} onClick - Function that handles click event.
+ * @param {function} onDragEnd - Function that handles end of dragging.
+ * @param {function} onDragStart - Function that handles start of dragging.
+ * @param {function} onTransformEnd - Function to handle transformation end.
+ * @param {React.Ref} ref - Reference for the circle.
  * @returns {JSX.Element} - Rendered circle.
  */
-const CircleShape = ({ x, y, radius, color, scaleX, scaleY }) => (
-  <Circle
-    x={x * scaleX}
-    y={y * scaleY}
-    radius={radius * Math.min(scaleX, scaleY)}
-    fill={color}
-    shadowBlur={5}
-  />
+const CircleShape = forwardRef(
+  (
+    {
+      properties,
+      scaleX,
+      scaleY,
+      color,
+      draggable,
+      onClick,
+      onDragEnd,
+      onDragStart,
+      onTransformEnd,
+      onTransformStart,
+      onDragMove,
+      dragBoundFunc,
+      currentWidth,
+      currentHeight,
+      onMouseEnter,
+    },
+    ref
+  ) => (
+    <Circle
+      ref={ref}
+      x={properties.x * (currentWidth / properties.screenWidth)}
+      y={properties.y * (currentHeight / properties.screenHeight)}
+      radius={properties.radius * (currentWidth / properties.screenWidth)}
+      stroke={color}
+      strokeWidth={properties.strokeWidth || 2}
+      draggable={draggable}
+      onClick={onClick}
+      onDragEnd={onDragEnd}
+      onDragStart={onDragStart}
+      onDragMove={onDragMove}
+      onMouseEnter={onMouseEnter}
+      dragBoundFunc={dragBoundFunc}
+      onTransformStart={onTransformStart}
+      onTransformEnd={onTransformEnd}
+    />
+  )
+);
+
+/**
+ * Line component renders a line shape on the canvas.
+ *
+ * @param {Object} properties - Shape properties (x, y, points, tension, strokeWidth, screenWidth, screenHeight).
+ * @param {string} color - Stroke color of the line.
+ * @param {boolean} draggable - If true, line can be dragged.
+ * @param {function} onClick - Function that handles click event.
+ * @param {function} onDragEnd - Function that handles end of dragging.
+ * @param {function} onDragStart - Function that handles start of dragging.
+ * @param {function} onTransformEnd - Function to handle transformation end.
+ * @param {React.Ref} ref - Reference for the line.
+ * @returns {JSX.Element} - Rendered line.
+ */
+const LineShape = forwardRef(
+  (
+    {
+      properties,
+      color,
+      draggable,
+      onClick,
+      onDragEnd,
+      onDragStart,
+      onTransformEnd,
+      onTransformStart,
+      onDragMove,
+      dragBoundFunc,
+      currentWidth,
+      currentHeight,
+      onMouseEnter,
+    },
+    ref
+  ) => (
+    <Line
+      ref={ref}
+      x={properties.x * (currentWidth / properties.screenWidth)}
+      y={properties.y * (currentHeight / properties.screenHeight)}
+      points={properties.points.map((point, index) =>
+        index % 2 === 0
+          ? point * (currentWidth / properties.screenWidth)
+          : point * (currentHeight / properties.screenHeight)
+      )}
+      tension={properties.tension || 0}
+      stroke={color}
+      strokeWidth={properties.strokeWidth || 2}
+      draggable={draggable}
+      onClick={onClick}
+      onDragEnd={onDragEnd}
+      onDragStart={onDragStart}
+      onDragMove={onDragMove}
+      onMouseEnter={onMouseEnter}
+      dragBoundFunc={dragBoundFunc}
+      onTransformStart={onTransformStart}
+      onTransformEnd={onTransformEnd}
+    />
+  )
 );
 
 /**
@@ -146,7 +239,6 @@ const Canvas = forwardRef(function Canvas(
   const videoRef = useRef(null);
   const konvaImageRef = useRef(null);
 
-
   // HOOK VALUES
   const { currentTime, setCurrentTime, isFullScreen } = useVideoController(
     videoRefVal,
@@ -185,29 +277,82 @@ const Canvas = forwardRef(function Canvas(
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
+      console.log({ x, y });
+
       const startTime = currentTime;
+      let shapeProperties;
+
+      switch (selectedShapeTool) {
+        case "rectangle":
+          shapeProperties = {
+            type: "rectangle",
+            x,
+            y,
+            width: 4, // Default width for rectangle
+            height: 4, // Default height for rectangle
+            startTime,
+            endTime: startTime + 0.5,
+            scaleX: 1,
+            scaleY: 1,
+            screenHeight: canvasParentHeight,
+            screenWidth: canvasParentWidth,
+          };
+          break;
+
+        case "circle":
+          shapeProperties = {
+            type: "circle",
+            x,
+            y,
+            radius: 20, // Default radius for circle
+            startTime,
+            endTime: startTime + 0.5,
+            scaleX: 1,
+            scaleY: 1,
+            screenHeight: canvasParentHeight,
+            screenWidth: canvasParentWidth,
+            strokeWidth: 2, // Default stroke width for circle
+          };
+          break;
+
+        case "line":
+          shapeProperties = {
+            type: "line",
+            x,
+            y,
+            points: [0, 0, 100, 0, 100, 100], // Default points for line
+            startTime,
+            endTime: startTime + 0.5,
+            scaleX: 1,
+            scaleY: 1,
+            screenHeight: canvasParentHeight,
+            screenWidth: canvasParentWidth,
+            strokeWidth: 2, // Default stroke width for line
+          };
+          break;
+
+        default:
+          return; // If no valid shape is selected, do nothing
+      }
+
       setNewShape({
         id: generateId(),
         color: annotationColor,
         label: "",
         data: {},
-        properties: {
-          type: "rectangle",
-          x,
-          y,
-          width: 4,
-          height: 4,
-          startTime,
-          endTime: startTime + 0.5,
-          scaleX: 1,
-          scaleY: 1,
-          screenHeight: canvasParentHeight,
-          screenWidth: canvasParentWidth,
-        },
+        properties: shapeProperties,
       });
+
       setIsDrawing(true);
     },
-    [currentTime, isFullScreen, annotationColor]
+    [
+      currentTime,
+      isFullScreen,
+      annotationColor,
+      selectedShapeTool,
+      canvasParentHeight,
+      canvasParentWidth,
+    ]
   );
 
   /**
@@ -223,16 +368,66 @@ const Canvas = forwardRef(function Canvas(
     const stage = e.target.getStage();
     if (!stage) return;
     const { x, y } = stage.getPointerPosition();
-// console.log({x,y})
-    if (x !== newShape.properties.x || y !== newShape.properties.y) {
-      const width = (x - newShape.properties.x);
-      const height = (y - newShape.properties.y);
 
-      setNewShape((prevShape) => ({
-        ...prevShape,
-        properties: { ...prevShape?.properties, width, height },
-      }));
+    // Exit early if there's no change in position
+    if (x === newShape.properties.x && y === newShape.properties.y) return;
+
+    // Switch case to update shape properties based on selected shape
+    let updatedShape;
+
+    switch (newShape.properties.type) {
+      case "rectangle":
+        const width = x - newShape.properties.x;
+        const height = y - newShape.properties.y;
+
+        updatedShape = {
+          ...newShape,
+          properties: {
+            ...newShape.properties,
+            width,
+            height,
+          },
+        };
+        break;
+
+      case "circle":
+        const radius = Math.sqrt(
+          Math.pow(x - newShape.properties.x, 2) +
+            Math.pow(y - newShape.properties.y, 2)
+        );
+
+        updatedShape = {
+          ...newShape,
+          properties: {
+            ...newShape.properties,
+            radius,
+          },
+        };
+        break;
+
+      case "line":
+        // For line, we need to update the points
+        const points = [
+          0,
+          0,
+          x - newShape.properties.x,
+          y - newShape.properties.y,
+        ]; // Basic line path
+
+        updatedShape = {
+          ...newShape,
+          properties: {
+            ...newShape.properties,
+            points,
+          },
+        };
+        break;
+
+      default:
+        return;
     }
+
+    setNewShape(updatedShape);
   }, 100);
 
   /**
@@ -346,15 +541,15 @@ const Canvas = forwardRef(function Canvas(
           prevShapes.map((shape) =>
             shape.id === shapeId
               ? {
-                ...shape,
-                properties: {
-                  ...shape.properties,
-                  x: node.x(),
-                  y: node.y(),
-                  width: node.width() * scaleX,
-                  height: node.height() * scaleY,
-                },
-              }
+                  ...shape,
+                  properties: {
+                    ...shape.properties,
+                    x: node.x(),
+                    y: node.y(),
+                    width: node.width() * scaleX,
+                    height: node.height() * scaleY,
+                  },
+                }
               : shape
           )
         );
@@ -532,13 +727,9 @@ const Canvas = forwardRef(function Canvas(
     setRectPosition({ x: newX, y: newY });
   };
 
-
-
-
   useEffect(() => {
     const video = videoRef.current;
     const konvaImage = konvaImageRef.current;
-
 
     const updateCanvas = () => {
       if (konvaImage && video) {
@@ -557,7 +748,7 @@ const Canvas = forwardRef(function Canvas(
     });
 
     video?.addEventListener("pause", () => {
-      video.pause()
+      video.pause();
     });
 
     return () => {
@@ -565,8 +756,7 @@ const Canvas = forwardRef(function Canvas(
     };
   }, []);
 
-
-  const [imagedim, setImgDim] = useState(dimensions)
+  const [imagedim, setImgDim] = useState(dimensions);
 
   useEffect(() => {
     const updateSize = () => {
@@ -576,12 +766,10 @@ const Canvas = forwardRef(function Canvas(
           width: offsetWidth,
           height: offsetHeight,
         });
-        setImgDim(
-          {
-            width: offsetWidth,
-            height: offsetHeight,
-          }
-        )
+        setImgDim({
+          width: offsetWidth,
+          height: offsetHeight,
+        });
       }
     };
 
@@ -655,28 +843,49 @@ const Canvas = forwardRef(function Canvas(
               height={imagedim.height}
             />
 
-            {selectedShapeId &&
-              shapes.find((shape) => shape.id === selectedShapeId) && (
-                <Text
-                  text="❌"
-                  x={
-                    shapes.find((shape) => shape.id === selectedShapeId)
-                      ?.properties?.x +
-                    shapes.find((shape) => shape.id === selectedShapeId)
-                      ?.properties?.width +
-                    5
+            {/* {selectedShapeId &&
+              (function () {
+                const selectedShape = shapes.find(
+                  (shape) => shape.id === selectedShapeId
+                );
+                if (selectedShape) {
+                  const { x, y, radius, points } = selectedShape.properties;
+
+                  // Calculate the position of the ❌ button based on the shape type
+                  let buttonX = x;
+                  let buttonY = y;
+
+                  if (selectedShape.properties.type === "rectangle") {
+                    buttonX += selectedShape.properties.width + 5; // For rectangle, use width
+                    buttonY -= 15;
+                  } else if (selectedShape.properties.type === "circle") {
+                    buttonX += radius + 5; // For circle, use radius
+                    buttonY -= 25;
+                  } else if (
+                    selectedShape.properties.type === "line" &&
+                    points
+                  ) {
+                    // For line, calculate the end point
+                    const [startX, startY, endX, endY] = points;
+                    buttonX = endX ;
+                    buttonY = endY ;
                   }
-                  y={
-                    shapes.find((shape) => shape.id === selectedShapeId)
-                      ?.properties?.y - 15
-                  }
-                  fill="red"
-                  strokeWidth={3}
-                  shadowColor="white"
-                  fontSize={10}
-                  onClick={(e) => deleteShape(e)}
-                />
-              )}
+
+                  return (
+                    <Text
+                      text="❌"
+                      x={buttonX}
+                      y={buttonY}
+                      fill="red"
+                      strokeWidth={3}
+                      shadowColor="white"
+                      fontSize={10}
+                      onClick={(e) => deleteShape(e)}
+                    />
+                  );
+                }
+                return null;
+              })()} */}
 
             {shapes
               .filter(
@@ -684,65 +893,184 @@ const Canvas = forwardRef(function Canvas(
                   currentTime >= shape.properties.startTime &&
                   currentTime <= shape.properties.endTime
               )
-              .map((shape) =>
-                shape.properties.type === "rectangle" ? (
-                  <Rectangle
-                    key={shape.id}
-                    ref={(ref) => {
-                      shapeRef.current[shape.id] = ref;
-                    }}
-                    {...shape}
-                    scaleX={stageRef.current?.scaleX()}
-                    scaleY={stageRef.current?.scaleY()}
-                    onMouseEnter={handleMouseEnterInStage}
-                    draggable={
-                      !selectedShapeTool &&
-                      !isFullScreen &&
-                      !lockEdit &&
-                      shape.id === selectedShapeId
-                    }
-                    onClick={
-                      !lockEdit && !isFullScreen && !selectedShapeTool
-                        ? (e) => handleSelectShape(shape.id, e)
-                        : null
-                    }
-                    onDragEnd={
-                      selectedShapeId ? (e) => handleDragEnd(e, shape.id) : null
-                    }
-                    onDragStart={selectedShapeId ? handleDragStart : null}
-                    onDragMove={selectedShapeId ? handleDragMove : null}
-                    dragBoundFunc={dragBoundFunc}
-                    onTransformEnd={
-                      selectedShapeId
-                        ? (e) => handleTransformEnd(e, shape.id)
-                        : null
-                    }
-                    onTransformStart={
-                      selectedShapeId ? handleTransformStart : null
-                    }
-                    currentHeight={canvasParentHeight}
-                    currentWidth={canvasParentWidth}
-                  />
-                ) : (
-                  <CircleShape
-                    key={shape.id}
-                    {...shape}
-                    scaleX={stageRef.current?.scaleX()}
-                    scaleY={stageRef.current?.scaleY()}
-                    color={annotationColor}
-                  />
-                )
-              )}
+              .map((shape) => {
+                switch (shape.properties.type) {
+                  case "rectangle":
+                    return (
+                      <Rectangle
+                        key={shape.id}
+                        ref={(ref) => {
+                          shapeRef.current[shape.id] = ref;
+                        }}
+                        {...shape}
+                        scaleX={stageRef.current?.scaleX()}
+                        scaleY={stageRef.current?.scaleY()}
+                        onMouseEnter={handleMouseEnterInStage}
+                        draggable={
+                          !selectedShapeTool &&
+                          !isFullScreen &&
+                          !lockEdit &&
+                          shape.id === selectedShapeId
+                        }
+                        onClick={
+                          !lockEdit && !isFullScreen && !selectedShapeTool
+                            ? (e) => handleSelectShape(shape.id, e)
+                            : null
+                        }
+                        onDragEnd={
+                          selectedShapeId
+                            ? (e) => handleDragEnd(e, shape.id)
+                            : null
+                        }
+                        onDragStart={selectedShapeId ? handleDragStart : null}
+                        onDragMove={selectedShapeId ? handleDragMove : null}
+                        dragBoundFunc={dragBoundFunc}
+                        onTransformEnd={
+                          selectedShapeId
+                            ? (e) => handleTransformEnd(e, shape.id)
+                            : null
+                        }
+                        onTransformStart={
+                          selectedShapeId ? handleTransformStart : null
+                        }
+                        currentHeight={canvasParentHeight}
+                        currentWidth={canvasParentWidth}
+                      />
+                    );
+                  case "circle":
+                    return (
+                      <CircleShape
+                        key={shape.id}
+                        ref={(ref) => {
+                          shapeRef.current[shape.id] = ref;
+                        }}
+                        {...shape}
+                        scaleX={stageRef.current?.scaleX()}
+                        scaleY={stageRef.current?.scaleY()}
+                        onMouseEnter={handleMouseEnterInStage}
+                        draggable={
+                          !selectedShapeTool &&
+                          !isFullScreen &&
+                          !lockEdit &&
+                          shape.id === selectedShapeId
+                        }
+                        onClick={
+                          !lockEdit && !isFullScreen && !selectedShapeTool
+                            ? (e) => handleSelectShape(shape.id, e)
+                            : null
+                        }
+                        onDragEnd={
+                          selectedShapeId
+                            ? (e) => handleDragEnd(e, shape.id)
+                            : null
+                        }
+                        onDragStart={selectedShapeId ? handleDragStart : null}
+                        onDragMove={selectedShapeId ? handleDragMove : null}
+                        dragBoundFunc={dragBoundFunc}
+                        onTransformEnd={
+                          selectedShapeId
+                            ? (e) => handleTransformEnd(e, shape.id)
+                            : null
+                        }
+                        onTransformStart={
+                          selectedShapeId ? handleTransformStart : null
+                        }
+                        currentHeight={canvasParentHeight}
+                        currentWidth={canvasParentWidth}
+                      />
+                    );
+                  case "line":
+                    return (
+                      <LineShape
+                        key={shape.id}
+                        ref={(ref) => {
+                          shapeRef.current[shape.id] = ref;
+                        }}
+                        {...shape}
+                        scaleX={stageRef.current?.scaleX()}
+                        scaleY={stageRef.current?.scaleY()}
+                        onMouseEnter={handleMouseEnterInStage}
+                        draggable={
+                          !selectedShapeTool &&
+                          !isFullScreen &&
+                          !lockEdit &&
+                          shape.id === selectedShapeId
+                        }
+                        onClick={
+                          !lockEdit && !isFullScreen && !selectedShapeTool
+                            ? (e) => handleSelectShape(shape.id, e)
+                            : null
+                        }
+                        onDragEnd={
+                          selectedShapeId
+                            ? (e) => handleDragEnd(e, shape.id)
+                            : null
+                        }
+                        onDragStart={selectedShapeId ? handleDragStart : null}
+                        onDragMove={selectedShapeId ? handleDragMove : null}
+                        dragBoundFunc={dragBoundFunc}
+                        onTransformEnd={
+                          selectedShapeId
+                            ? (e) => handleTransformEnd(e, shape.id)
+                            : null
+                        }
+                        onTransformStart={
+                          selectedShapeId ? handleTransformStart : null
+                        }
+                        currentHeight={canvasParentHeight}
+                        currentWidth={canvasParentWidth}
+                      />
+                    );
+                  default:
+                    return null; // return null if shape type doesn't match
+                }
+              })}
+
             {newShape && (
-              <Rect
-                x={newShape.properties.x}
-                y={newShape.properties.y}
-                width={newShape.properties.width}
-                height={newShape.properties.height}
-                stroke="violet"
-                opacity={0.8}
-              />
+              <>
+                {(() => {
+                  switch (newShape.properties.type) {
+                    case "rectangle":
+                      return (
+                        <Rect
+                          x={newShape.properties.x}
+                          y={newShape.properties.y}
+                          width={newShape.properties.width}
+                          height={newShape.properties.height}
+                          stroke="violet"
+                          opacity={0.8}
+                        />
+                      );
+
+                    case "circle":
+                      return (
+                        <Circle
+                          x={newShape.properties.x}
+                          y={newShape.properties.y}
+                          radius={newShape.properties.radius}
+                          stroke="violet"
+                          opacity={0.8}
+                        />
+                      );
+
+                    case "line":
+                      return (
+                        <Line
+                          x={newShape.properties.x}
+                          y={newShape.properties.y}
+                          points={newShape.properties.points}
+                          stroke="violet"
+                          opacity={0.8}
+                        />
+                      );
+
+                    default:
+                      return null;
+                  }
+                })()}
+              </>
             )}
+
             <Transformer
               ref={transformerRef}
               keepRatio={false}
