@@ -13,7 +13,6 @@ const Player = forwardRef(function VideoElem(props, ref) {
         videoElement.loop=true;
         videoElement.autoPlay=true;
         videoElement.addEventListener('loadeddata', () => {
-
         });
 
         return () => {

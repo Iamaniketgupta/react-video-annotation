@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import AnnotationTools from "./components/AnnotationTools";
 import Settings from "./components/Settings";
 import Tools from "./components/Tools";
-import VideoPlayer from "./components/videoPlayer";
 import { CiSettings } from "react-icons/ci";
 import DataForm from "./components/DataForm";
 import AnnotationsList from "./components/AnnotationsList";

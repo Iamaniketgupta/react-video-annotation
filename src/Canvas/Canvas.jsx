@@ -178,10 +178,13 @@ const Canvas = forwardRef(function Canvas(
   const handleMouseDown = useCallback(
     (e) => {
       if (isFullScreen) return;
+      if(selectedShapeTool!=="rectangle" ||selectedShapeTool!=="circle"||selectedShapeTool!=="line" ){
+        console.warning("Kindly Select appropriate tool which can only include line rectangle and circle");
+        return;
+      }
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
-      // console.log({x,y})
       const startTime = currentTime;
       setNewShape({
         id: generateId(),
