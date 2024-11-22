@@ -528,31 +528,64 @@ const Canvas = forwardRef(function Canvas(
       const node = e.target;
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
-
+  
       node.scaleX(1);
       node.scaleY(1);
-
+  
       if (!isFullScreen) {
         setShapes((prevShapes) =>
-          prevShapes.map((shape) =>
-            shape.id === shapeId
-              ? {
-                  ...shape,
-                  properties: {
-                    ...shape.properties,
-                    x: node.x(),
-                    y: node.y(),
-                    width: node.width() * scaleX,
-                    height: node.height() * scaleY,
-                  },
-                }
-              : shape
-          )
+          prevShapes.map((shape) => {
+            if (shape.id !== shapeId) return shape;
+  
+            const { type } = shape.properties;
+  
+            let updatedProperties;
+            switch (type) {
+              case "rectangle":
+                updatedProperties = {
+                  ...shape.properties,
+                  x: node.x(),
+                  y: node.y(),
+                  width: node.width() * scaleX,
+                  height: node.height() * scaleY,
+                };
+                break;
+  
+              case "circle":
+                updatedProperties = {
+                  ...shape.properties,
+                  x: node.x(),
+                  y: node.y(),
+                  radius: node.radius() * scaleX, // Assuming uniform scaling for radius
+                };
+                break;
+  
+              case "line":
+                updatedProperties = {
+                  ...shape.properties,
+                  x: node.x(),
+                  y: node.y(),
+                  points: node.points().map((point, index) =>
+                    index % 2 === 0 ? point * scaleX : point * scaleY
+                  ), // Scale points for the line
+                };
+                break;
+  
+              default:
+                return shape; // No changes for unknown types
+            }
+  
+            return {
+              ...shape,
+              properties: updatedProperties,
+            };
+          })
         );
       }
     },
     [isFullScreen]
   );
+  
 
   /**
    * Handle UNDO.
