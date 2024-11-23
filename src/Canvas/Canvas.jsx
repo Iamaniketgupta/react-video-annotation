@@ -229,7 +229,7 @@ const Canvas = forwardRef(function Canvas(
     width: 500,
     height: 300,
   });
-
+  
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
@@ -270,11 +270,16 @@ const Canvas = forwardRef(function Canvas(
   const handleMouseDown = useCallback(
     (e) => {
       if (isFullScreen) return;
+      
+    // Access cursor style of the document
+    const cursor = window.getComputedStyle(document.body).cursor;
+
+    console.log({cursor})
+    if (cursor === "nwse-resize") return;
+
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
-      console.log({ x, y });
-
       const startTime = currentTime;
       let shapeProperties;
 
@@ -426,6 +431,10 @@ const Canvas = forwardRef(function Canvas(
     setNewShape(updatedShape);
   }, 100);
 
+  useEffect(() => {
+    console.log(shapes)
+  }, [shapes])
+  
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
    *
@@ -519,26 +528,30 @@ const Canvas = forwardRef(function Canvas(
    */
 
   const handleTransformStart = useCallback(() => {
+    document.body.style.cursor = 'nwse-resize';     
     setHistory((prevHistory) => [...prevHistory, shapes]);
     setRedoStack([]);
   }, [shapes]);
 
   const handleTransformEnd = useCallback(
     (e, shapeId) => {
+      
+      
+      document.body.style.cursor = 'auto';
       const node = e.target;
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
-  
+
       node.scaleX(1);
       node.scaleY(1);
-  
+
       if (!isFullScreen) {
         setShapes((prevShapes) =>
           prevShapes.map((shape) => {
             if (shape.id !== shapeId) return shape;
-  
+
             const { type } = shape.properties;
-  
+
             let updatedProperties;
             switch (type) {
               case "rectangle":
@@ -550,7 +563,7 @@ const Canvas = forwardRef(function Canvas(
                   height: node.height() * scaleY,
                 };
                 break;
-  
+
               case "circle":
                 updatedProperties = {
                   ...shape.properties,
@@ -559,22 +572,24 @@ const Canvas = forwardRef(function Canvas(
                   radius: node.radius() * scaleX, // Assuming uniform scaling for radius
                 };
                 break;
-  
+
               case "line":
                 updatedProperties = {
                   ...shape.properties,
                   x: node.x(),
                   y: node.y(),
-                  points: node.points().map((point, index) =>
-                    index % 2 === 0 ? point * scaleX : point * scaleY
-                  ), // Scale points for the line
+                  points: node
+                    .points()
+                    .map((point, index) =>
+                      index % 2 === 0 ? point * scaleX : point * scaleY
+                    ), // Scale points for the line
                 };
                 break;
-  
+
               default:
                 return shape; // No changes for unknown types
             }
-  
+
             return {
               ...shape,
               properties: updatedProperties,
@@ -585,7 +600,6 @@ const Canvas = forwardRef(function Canvas(
     },
     [isFullScreen]
   );
-  
 
   /**
    * Handle UNDO.
@@ -823,7 +837,6 @@ const Canvas = forwardRef(function Canvas(
       e.target.getStage().container().style.cursor = "crosshair";
     }
   };
-
   return (
     <>
       <div
@@ -1040,11 +1053,15 @@ const Canvas = forwardRef(function Canvas(
                         dragBoundFunc={dragBoundFunc}
                         onTransformEnd={
                           selectedShapeId
-                            ? (e) => handleTransformEnd(e, shape.id)
+                            ? (e) =>{ handleTransformEnd(e, shape.id)}
                             : null
                         }
                         onTransformStart={
-                          selectedShapeId ? handleTransformStart : null
+                          selectedShapeId ? (e)=>{
+                            e.stopPropagation();
+                            
+                            handleTransformStart()
+                          } : null
                         }
                         currentHeight={canvasParentHeight}
                         currentWidth={canvasParentWidth}

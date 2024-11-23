@@ -14,6 +14,122 @@ function App() {
   const [annotationColor, setAnnotationColor] = useState("red");
 
   const playerRef = useRef(null);
+  const val = [
+    {
+        "id": "20iz2qqhdcta0txnlumjeo",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 221.34973120101947,
+            "y": 101.0265121459961,
+            "width": 111.00157617226952,
+            "height": 70,
+            "startTime": 0.664162,
+            "endTime": 1.1641620000000001,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    },
+    {
+        "id": "xhwgsthytkhaasqbkgst5",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 404.35232975530164,
+            "y": 159.0265121459961,
+            "width": 58.00082358551026,
+            "height": 99,
+            "startTime": 0.664162,
+            "endTime": 1.1641620000000001,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    },
+    {
+        "id": "zpoqtr7oamromc3b71elie",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 55.34737404249023,
+            "y": 184.0265121459961,
+            "width": 104.0014767740183,
+            "height": 51,
+            "startTime": 0.664162,
+            "endTime": 1.1641620000000001,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    },
+    {
+        "id": "kjkne0pdhuqmmuu6om7ze",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 193.34933360801452,
+            "y": 92.0265121459961,
+            "width": 103.00146257426812,
+            "height": 57,
+            "startTime": 2.059258,
+            "endTime": 2.559258,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    },
+    {
+        "id": "ytn1y4764ufh9ckex368v",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 61.34745924099129,
+            "y": 189.0265121459961,
+            "width": 90.00127797751583,
+            "height": 60,
+            "startTime": 2.059258,
+            "endTime": 2.559258,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    },
+    {
+        "id": "52ilxvaohpa7rauwkoqhpb",
+        "color": "red",
+        "label": "",
+        "data": {},
+        "properties": {
+            "type": "rectangle",
+            "x": 270.35042698877805,
+            "y": 221.0265121459961,
+            "width": 103.00146257426815,
+            "height": 48,
+            "startTime": 2.059258,
+            "endTime": 2.559258,
+            "scaleX": 1,
+            "scaleY": 1,
+            "screenHeight": 300,
+            "screenWidth": 533
+        }
+    }
+]
 
   return (
     <div className="w-screen h-screen bg-stone-900 overflow-hidden flex flex-col">
@@ -37,6 +153,7 @@ function App() {
             hideAnnotations={false}
             annotationColor={annotationColor}
             lockEdit={false}
+            data={val}
             onSubmit={() => { }}
           />
           </div>
