@@ -13,7 +13,6 @@ const Player = forwardRef(function VideoElem(props, ref) {
         videoElement.loop=true;
         videoElement.autoPlay=true;
         videoElement.addEventListener('loadeddata', () => {
-
         });
 
         return () => {
@@ -22,8 +21,15 @@ const Player = forwardRef(function VideoElem(props, ref) {
     }, [props?.parentref, props.url, ref]);
 
     return <video style={{
-        aspectRatio:"16/9"
-    }} ref={playerRef} {...props} preload='auto' controls={false} width={"100%"} hidden />;
+        minHeight: 300,
+        objectFit: "cover",
+        minWidth: 500,
+        position: "absolute", 
+        top: 0,
+        left: 0,
+        width: props.dimensions.width, 
+        height: props.dimensions.height, 
+    }} ref={playerRef} {...props} preload='auto' controls={false}  />;
 });
 export default Player;
 

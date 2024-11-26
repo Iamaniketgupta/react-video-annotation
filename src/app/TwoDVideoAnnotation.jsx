@@ -1,40 +1,50 @@
 import React, { forwardRef } from 'react';
 // import PropTypes from 'prop-types';
 import Canvas from '../Canvas/Canvas';
-
-const TwoDVideoAnnotation = forwardRef(function TwoDVideoAnnotation({
+import { CanvasProvider } from '../contexts/CanvasProvider';
+const TwoDVideoAnnotation = ({
   videoUrl,
   selectedShapeTool,
   hideAnnotations,
   lockEdit,
-  onSubmit,
   data,
-  setData,
-  annotationColor
-}, ref) {
-  return (
+  onUndo,
+  onRedo,
+  onDeleteShape,
+  annotationColor,
+  selectedAnnotationData // Callback for selected data
 
-    <div
-      style={{
-        padding: '0',
-        position: 'relative',
-      }}
-    >
-   
-        <Canvas ref={ref}
+}) =>{
+  
+  
+
+  return (
+    <CanvasProvider>
+
+      <div
+        style={{
+          padding: '0',
+          position: 'relative',
+        }}
+      >
+
+        <Canvas 
           url={videoUrl}
           selectedShapeTool={selectedShapeTool}
+          selectedAnnotationData={selectedAnnotationData}
           hideAnnotations={hideAnnotations || false}
           lockEdit={lockEdit || false}
           initialData={data}
-          externalSetData={setData}
-          externalOnSubmit={onSubmit}
+          onUndo={onUndo}
+          onRedo ={onRedo}
+          onDeleteShape ={onDeleteShape}
           annotationColor={annotationColor || '#FF0000'}
         />
-    </div>
+      </div>
+    </CanvasProvider>
+
   )
 }
-);
 
 // TwoDVideoAnnotation.propTypes = {
 //   videoUrl: PropTypes.string.isRequired,
@@ -66,6 +76,5 @@ const TwoDVideoAnnotation = forwardRef(function TwoDVideoAnnotation({
 //   setData: PropTypes.func,
 //   annotationColor: PropTypes.string,
 // };
-
 
 export default TwoDVideoAnnotation;

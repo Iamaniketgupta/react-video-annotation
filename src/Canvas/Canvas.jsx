@@ -1,11 +1,9 @@
-/* eslint-disable react/prop-types */
 import React, {
   useState,
   useEffect,
   useRef,
   useCallback,
-  forwardRef,
-  useImperativeHandle,
+
 } from "react";
 import {
   Stage,
@@ -13,198 +11,19 @@ import {
   Rect,
   Transformer,
   Circle,
-  Image,
-  Text,
   Line,
 } from "react-konva";
 import { throttle } from "lodash";
 import generateId from "../utils/generateId";
-// import { redo, undo ,deleteShape} from "./utils";
 import Player from "../VideoPlayer/Player";
 import TransparentVideoController from "../VideoPlayerController/TransparentVideoplayerController";
 import useVideoController from "../VideoPlayerController/UseVideoPlayerControllerHook";
-/**
- * Rectangle component renders a rectangle shape on the canvas.
- *
- * @param {Object} properties - Shape properties (x, y, width, height).
- * @param {number} scaleX - Horizontal scale factor.
- * @param {number} scaleY - Vertical scale factor.
- * @param {string} color - Stroke color of the rectangle.
- * @param {boolean} draggable - If true, rectangle can be dragged.
- * @param {function} onClick - Function that handles click event.
- * @param {function} onDragEnd - Function that handles end of dragging.
- * @param {function} onDragStart - Function that handles start of dragging.
- * @param {function} onTransformEnd - Function to handle transformation end.
- * @param {React.Ref} ref - Reference for the rectangle.
- * @returns {JSX.Element} - Rendered rectangle.
- */
-const Rectangle = forwardRef(
-  (
-    {
-      properties,
-      scaleX,
-      scaleY,
-      color,
-      draggable,
-      onClick,
-      onDragEnd,
-      onDragStart,
-      onTransformEnd,
-      onTransformStart,
-      onDragMove,
-      dragBoundFunc,
-      currentWidth,
-      currentHeight,
-      onMouseEnter,
-    },
-    ref
-  ) => (
-    <Rect
-      ref={ref}
-      x={properties.x * (currentWidth / properties.screenWidth)}
-      y={properties.y * (currentHeight / properties.screenHeight)}
-      width={properties.width * (currentWidth / properties.screenWidth)}
-      height={properties.height * (currentHeight / properties.screenHeight)}
-      shadowBlur={5}
-      stroke={color}
-      strokeWidth={2}
-      draggable={draggable}
-      onClick={onClick}
-      onDragEnd={onDragEnd}
-      onDragStart={onDragStart}
-      onDragMove={onDragMove}
-      onMouseEnter={onMouseEnter}
-      dragBoundFunc={dragBoundFunc}
-      onTransformStart={onTransformStart}
-      onTransformEnd={onTransformEnd}
-    />
-  )
-);
+import { useCanvas } from "../contexts/CanvasProvider";
+import { LineShape } from "../shapes/Line";
+import { CircleShape } from "../shapes/Circle";
+import { Rectangle } from "../shapes/Rectangle";
 
-Rectangle.displayName = "Rectangle";
-
-/**
- * Circle component renders a circle shape on the canvas.
- *
- * @param {Object} properties - Shape properties (x, y, radius, screenWidth, screenHeight).
- * @param {number} scaleX - Horizontal scale factor.
- * @param {number} scaleY - Vertical scale factor.
- * @param {string} color - Stroke color of the circle.
- * @param {boolean} draggable - If true, circle can be dragged.
- * @param {function} onClick - Function that handles click event.
- * @param {function} onDragEnd - Function that handles end of dragging.
- * @param {function} onDragStart - Function that handles start of dragging.
- * @param {function} onTransformEnd - Function to handle transformation end.
- * @param {React.Ref} ref - Reference for the circle.
- * @returns {JSX.Element} - Rendered circle.
- */
-const CircleShape = forwardRef(
-  (
-    {
-      properties,
-      scaleX,
-      scaleY,
-      color,
-      draggable,
-      onClick,
-      onDragEnd,
-      onDragStart,
-      onTransformEnd,
-      onTransformStart,
-      onDragMove,
-      dragBoundFunc,
-      currentWidth,
-      currentHeight,
-      onMouseEnter,
-    },
-    ref
-  ) => (
-    <Circle
-      ref={ref}
-      x={properties.x * (currentWidth / properties.screenWidth)}
-      y={properties.y * (currentHeight / properties.screenHeight)}
-      radius={properties.radius * (currentWidth / properties.screenWidth)}
-      stroke={color}
-      strokeWidth={properties.strokeWidth || 2}
-      draggable={draggable}
-      onClick={onClick}
-      onDragEnd={onDragEnd}
-      onDragStart={onDragStart}
-      onDragMove={onDragMove}
-      onMouseEnter={onMouseEnter}
-      dragBoundFunc={dragBoundFunc}
-      onTransformStart={onTransformStart}
-      onTransformEnd={onTransformEnd}
-    />
-  )
-);
-
-/**
- * Line component renders a line shape on the canvas.
- *
- * @param {Object} properties - Shape properties (x, y, points, tension, strokeWidth, screenWidth, screenHeight).
- * @param {string} color - Stroke color of the line.
- * @param {boolean} draggable - If true, line can be dragged.
- * @param {function} onClick - Function that handles click event.
- * @param {function} onDragEnd - Function that handles end of dragging.
- * @param {function} onDragStart - Function that handles start of dragging.
- * @param {function} onTransformEnd - Function to handle transformation end.
- * @param {React.Ref} ref - Reference for the line.
- * @returns {JSX.Element} - Rendered line.
- */
-const LineShape = forwardRef(
-  (
-    {
-      properties,
-      color,
-      draggable,
-      onClick,
-      onDragEnd,
-      onDragStart,
-      onTransformEnd,
-      onTransformStart,
-      onDragMove,
-      dragBoundFunc,
-      currentWidth,
-      currentHeight,
-      onMouseEnter,
-    },
-    ref
-  ) => (
-    <Line
-      ref={ref}
-      x={properties.x * (currentWidth / properties.screenWidth)}
-      y={properties.y * (currentHeight / properties.screenHeight)}
-      points={properties.points.map((point, index) =>
-        index % 2 === 0
-          ? point * (currentWidth / properties.screenWidth)
-          : point * (currentHeight / properties.screenHeight)
-      )}
-      tension={properties.tension || 0}
-      stroke={color}
-      strokeWidth={properties.strokeWidth || 2}
-      draggable={draggable}
-      onClick={onClick}
-      onDragEnd={onDragEnd}
-      onDragStart={onDragStart}
-      onDragMove={onDragMove}
-      onMouseEnter={onMouseEnter}
-      dragBoundFunc={dragBoundFunc}
-      onTransformStart={onTransformStart}
-      onTransformEnd={onTransformEnd}
-    />
-  )
-);
-
-/**
- * Canvas component manages the drawing and transformation of shapes.
- *
- * @param {function} getCurrentTime - Function to get the current time from the video.
- * @param {Object} scale - Scaling factors for the canvas (scaleX, scaleY).
- * @param {boolean} isFullScreen - Boolean to determine if in full-screen mode.
- * @returns {JSX.Element} - Rendered canvas with shapes.
- */
-const Canvas = forwardRef(function Canvas(
+const Canvas = (
   {
     children,
     url,
@@ -212,24 +31,32 @@ const Canvas = forwardRef(function Canvas(
     hideAnnotations,
     lockEdit,
     initialData,
-    externalSetData,
-    externalOnSubmit,
     annotationColor,
-  },
-  ref
-) {
-  // GENERAL STATES
-  const [shapes, setShapes] = useState(initialData || []);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [newShape, setNewShape] = useState(null);
-  const [selectedShapeId, setSelectedShapeId] = useState(null);
-  const [rectPosititon, setRectPosition] = useState({ x: null, y: null });
-  const [videoRefVal, setVideoRefVal] = useState(null);
-  const [dimensions, setDimensions] = useState({
-    width: 500,
-    height: 300,
-  });
-  
+    opacity,
+    strokeWidth,
+    selectedAnnotationData,
+    videoControls,
+    onUndo,
+    onRedo,
+    onDeleteShape
+  }
+
+) => {
+
+  const {
+    shapes, setShapes,
+    isDrawing, setIsDrawing,
+    newShape, setNewShape,
+    selectedShapeId, setSelectedShapeId,
+    rectPosititon, setRectPosition,
+    videoRefVal, setVideoRefVal,
+    dimensions, setDimensions,
+    history, setHistory,
+    redoStack, setRedoStack,
+    undo, redo, deleteShape
+  } = useCanvas();
+
+
   // REF STATES
   const shapeRef = useRef({});
   const transformerRef = useRef();
@@ -237,16 +64,12 @@ const Canvas = forwardRef(function Canvas(
   const canvasParentRef = useRef(null);
   const layerRef = useRef(null);
   const videoRef = useRef(null);
-  const konvaImageRef = useRef(null);
 
   // HOOK VALUES
   const { currentTime, setCurrentTime, isFullScreen } = useVideoController(
     videoRefVal,
     canvasParentRef
   );
-  // STACK STATES
-  const [history, setHistory] = useState([]);
-  const [redoStack, setRedoStack] = useState([]);
 
   const [canvasParentWidth, setcanvasParentWidth] = useState(
     canvasParentRef?.current?.offsetWidth
@@ -256,12 +79,31 @@ const Canvas = forwardRef(function Canvas(
   );
 
   useEffect(() => {
-    setVideoRefVal(videoRef);
-
+    if (videoRef) {
+      setVideoRefVal(videoRef);
+    }
     return () => {
       setVideoRefVal(null);
     };
   }, [videoRef]);
+
+
+  //  =================== Exported Handlers ===================================
+  useEffect(() => {
+    if (selectedAnnotationData && selectedShapeId) {
+      const selectedData = shapes.find((shape) => shape.id === selectedShapeId);
+      selectedAnnotationData(selectedData);
+    }
+
+  }, [selectedShapeId, shapes, selectedAnnotationData]);
+
+ 
+
+
+  // ============================================================================
+
+
+
   /**
    * Handle mouse down event to start drawing a new shape.
    *
@@ -277,6 +119,12 @@ const Canvas = forwardRef(function Canvas(
     console.log({cursor})
     if (cursor === "nwse-resize") return;
 
+    
+      if (selectedShapeTool !== "rectangle" && selectedShapeTool !== "circle" && selectedShapeTool !== "line") {
+        console.warning("Kindly Select appropriate tool which can only include line rectangle and circle");
+        return;
+      }
+      
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
@@ -297,6 +145,8 @@ const Canvas = forwardRef(function Canvas(
             scaleY: 1,
             screenHeight: canvasParentHeight,
             screenWidth: canvasParentWidth,
+            strokeWidth: strokeWidth || 2,
+            opacity: opacity
           };
           break;
 
@@ -305,14 +155,15 @@ const Canvas = forwardRef(function Canvas(
             type: "circle",
             x,
             y,
-            radius: 20, // Default radius for circle
+            radius: 4,
             startTime,
             endTime: startTime + 0.5,
             scaleX: 1,
             scaleY: 1,
             screenHeight: canvasParentHeight,
             screenWidth: canvasParentWidth,
-            strokeWidth: 2, // Default stroke width for circle
+            strokeWidth: strokeWidth || 2,
+            opacity: opacity
           };
           break;
 
@@ -321,19 +172,20 @@ const Canvas = forwardRef(function Canvas(
             type: "line",
             x,
             y,
-            points: [0, 0, 100, 0, 100, 100], // Default points for line
+            points: [0, 0, 100, 0, 100, 100],
             startTime,
             endTime: startTime + 0.5,
             scaleX: 1,
             scaleY: 1,
             screenHeight: canvasParentHeight,
             screenWidth: canvasParentWidth,
-            strokeWidth: 2, // Default stroke width for line
+            strokeWidth: strokeWidth || 2,
+            opacity: opacity
           };
           break;
 
         default:
-          return; // If no valid shape is selected, do nothing
+          return;
       }
 
       setNewShape({
@@ -351,6 +203,8 @@ const Canvas = forwardRef(function Canvas(
       isFullScreen,
       annotationColor,
       selectedShapeTool,
+      strokeWidth,
+      opacity,
       canvasParentHeight,
       canvasParentWidth,
     ]
@@ -370,10 +224,8 @@ const Canvas = forwardRef(function Canvas(
     if (!stage) return;
     const { x, y } = stage.getPointerPosition();
 
-    // Exit early if there's no change in position
     if (x === newShape.properties.x && y === newShape.properties.y) return;
 
-    // Switch case to update shape properties based on selected shape
     let updatedShape;
 
     switch (newShape.properties.type) {
@@ -394,7 +246,7 @@ const Canvas = forwardRef(function Canvas(
       case "circle":
         const radius = Math.sqrt(
           Math.pow(x - newShape.properties.x, 2) +
-            Math.pow(y - newShape.properties.y, 2)
+          Math.pow(y - newShape.properties.y, 2)
         );
 
         updatedShape = {
@@ -407,13 +259,12 @@ const Canvas = forwardRef(function Canvas(
         break;
 
       case "line":
-        // For line, we need to update the points
         const points = [
           0,
           0,
           x - newShape.properties.x,
           y - newShape.properties.y,
-        ]; // Basic line path
+        ];
 
         updatedShape = {
           ...newShape,
@@ -431,9 +282,6 @@ const Canvas = forwardRef(function Canvas(
     setNewShape(updatedShape);
   }, 100);
 
-  useEffect(() => {
-    console.log(shapes)
-  }, [shapes])
   
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
@@ -475,17 +323,7 @@ const Canvas = forwardRef(function Canvas(
     }
   };
 
-  /**
-   * Handle shape deletion by filtering out the shape with the given ID.
-   *
-   * @param {string} shapeId - The ID of the shape to delete.
-   */
-  const deleteShape = useCallback(() => {
-    setShapes((prevShapes) =>
-      prevShapes.filter((shape) => shape.id !== selectedShapeId)
-    );
-    setSelectedShapeId(null);
-  }, [selectedShapeId]);
+
 
   /**
    * Handle drag start event to change the cursor style.
@@ -493,6 +331,9 @@ const Canvas = forwardRef(function Canvas(
    * @param {Object} e - The event object.
    */
   const handleDragStart = (e) => {
+    console.log({history})
+    setHistory((prevHistory) => [...prevHistory, shapes]);
+    setRedoStack([]);
     e.target.getStage().container().style.cursor = "move";
   };
 
@@ -601,59 +442,8 @@ const Canvas = forwardRef(function Canvas(
     [isFullScreen]
   );
 
-  /**
-   * Handle UNDO.
-   */
-  const undo = useCallback(() => {
-    if (history.length > 0) {
-      const lastState = history[history.length - 1];
-      setRedoStack((prevRedoStack) => [shapes, ...prevRedoStack]);
-      setShapes(lastState);
-      setHistory((prevHistory) => prevHistory.slice(0, -1));
-    }
-  }, [history, shapes]);
 
-  /**
-   * Handle REDO.
-   */
-  const redo = useCallback(() => {
-    if (redoStack.length > 0) {
-      const nextState = redoStack[0];
-      setHistory((prevHistory) => [...prevHistory, shapes]);
-      setShapes(nextState);
-      setRedoStack((prevRedoStack) => prevRedoStack.slice(1));
-    }
-  }, [redoStack, shapes]);
 
-  /**
-   * Set the data of the selected shape.
-   * @param {Object} data - The data to be set.
-   */
-  const setSelectedAnnotationData = useCallback((data) => {
-    if (!selectedShapeId) {
-      throw new Error("Select a shape first");
-    }
-
-    const shape = shapes.find((shape) => shape.id === selectedShapeId);
-    if (shape) {
-      shape.properties.data = data;
-      setShapes([...shapes]);
-    }
-  });
-
-  /**
-   * Get the data of the selected shape.
-   * @returns {any} The data of the selected shape.
-   */
-  const getSelectedAnnotationData = useCallback(() => {
-    if (!selectedShapeId) {
-      throw new Error("Select a shape first");
-    }
-    const shape = shapes.find((shape) => shape.id === selectedShapeId);
-    if (shape) {
-      return shape?.properties?.data;
-    }
-  });
 
   useEffect(() => {
     setcanvasParentHeight(canvasParentRef?.current?.offsetHeight);
@@ -692,7 +482,7 @@ const Canvas = forwardRef(function Canvas(
   useEffect(() => {
     if (selectedShapeId !== null && shapeRef.current[selectedShapeId]) {
       transformerRef.current.nodes([shapeRef.current[selectedShapeId]]);
-      transformerRef.current.getLayer().batchDraw();
+      transformerRef.current.getLayer()?.batchDraw();
     } else {
       transformerRef.current.nodes([]);
     }
@@ -732,7 +522,7 @@ const Canvas = forwardRef(function Canvas(
     selectedShapeId,
   ]);
 
-  // lo
+
   const dragBoundFunc = (pos) => {
     const newX = Math.max(
       0,
@@ -770,34 +560,8 @@ const Canvas = forwardRef(function Canvas(
     setRectPosition({ x: newX, y: newY });
   };
 
-  useEffect(() => {
-    const video = videoRef.current;
-    const konvaImage = konvaImageRef.current;
 
-    const updateCanvas = () => {
-      if (konvaImage && video) {
-        konvaImage.image(video);
-        konvaImage.getLayer().batchDraw();
-      }
-      requestAnimationFrame(updateCanvas);
-    };
 
-    if (video) {
-      updateCanvas();
-    }
-
-    video?.addEventListener("play", () => {
-      video.play();
-    });
-
-    video?.addEventListener("pause", () => {
-      video.pause();
-    });
-
-    return () => {
-      video?.pause();
-    };
-  }, []);
 
   const [imagedim, setImgDim] = useState(dimensions);
 
@@ -821,14 +585,7 @@ const Canvas = forwardRef(function Canvas(
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    shapes,
-    undo,
-    redo,
-    deleteShape,
-    setSelectedAnnotationData,
-    getSelectedAnnotationData,
-  }));
+
 
   const handleMouseEnterInStage = (e) => {
     if (!selectedShapeTool) {
@@ -846,8 +603,12 @@ const Canvas = forwardRef(function Canvas(
           aspectRatio: "16/9",
           minHeight: 300,
           minWidth: 500,
+          position: "relative",
+          // backgroundColor: "red",
         }}
       >
+        <Player url={url} {...videoControls} ref={videoRef} dimensions={imagedim} parentref={canvasParentRef} />
+
         <Stage
           ref={stageRef}
           width={dimensions.width}
@@ -878,56 +639,6 @@ const Canvas = forwardRef(function Canvas(
           onClick={!isFullScreen ? (e) => handleStageClick(e) : null}
         >
           <Layer ref={layerRef}>
-            <Image
-              ref={konvaImageRef}
-              image={videoRef?.current}
-              width={imagedim.width}
-              height={imagedim.height}
-            />
-
-            {/* {selectedShapeId &&
-              (function () {
-                const selectedShape = shapes.find(
-                  (shape) => shape.id === selectedShapeId
-                );
-                if (selectedShape) {
-                  const { x, y, radius, points } = selectedShape.properties;
-
-                  // Calculate the position of the ❌ button based on the shape type
-                  let buttonX = x;
-                  let buttonY = y;
-
-                  if (selectedShape.properties.type === "rectangle") {
-                    buttonX += selectedShape.properties.width + 5; // For rectangle, use width
-                    buttonY -= 15;
-                  } else if (selectedShape.properties.type === "circle") {
-                    buttonX += radius + 5; // For circle, use radius
-                    buttonY -= 25;
-                  } else if (
-                    selectedShape.properties.type === "line" &&
-                    points
-                  ) {
-                    // For line, calculate the end point
-                    const [startX, startY, endX, endY] = points;
-                    buttonX = endX ;
-                    buttonY = endY ;
-                  }
-
-                  return (
-                    <Text
-                      text="❌"
-                      x={buttonX}
-                      y={buttonY}
-                      fill="red"
-                      strokeWidth={3}
-                      shadowColor="white"
-                      fontSize={10}
-                      onClick={(e) => deleteShape(e)}
-                    />
-                  );
-                }
-                return null;
-              })()} */}
 
             {shapes
               .filter(
@@ -1068,7 +779,7 @@ const Canvas = forwardRef(function Canvas(
                       />
                     );
                   default:
-                    return null; // return null if shape type doesn't match
+                    return null;
                 }
               })}
 
@@ -1079,8 +790,8 @@ const Canvas = forwardRef(function Canvas(
                     case "rectangle":
                       return (
                         <Rect
-                          x={newShape.properties.x}
-                          y={newShape.properties.y}
+                          x={newShape.properties?.x}
+                          y={newShape.properties?.y}
                           width={newShape.properties.width}
                           height={newShape.properties.height}
                           stroke="violet"
@@ -1091,10 +802,11 @@ const Canvas = forwardRef(function Canvas(
                     case "circle":
                       return (
                         <Circle
-                          x={newShape.properties.x}
-                          y={newShape.properties.y}
+                          x={newShape.properties?.x}
+                          y={newShape.properties?.y}
                           radius={newShape.properties.radius}
                           stroke="violet"
+
                           opacity={0.8}
                         />
                       );
@@ -1102,8 +814,8 @@ const Canvas = forwardRef(function Canvas(
                     case "line":
                       return (
                         <Line
-                          x={newShape.properties.x}
-                          y={newShape.properties.y}
+                          x={newShape.properties?.x}
+                          y={newShape.properties?.y}
                           points={newShape.properties.points}
                           stroke="violet"
                           opacity={0.8}
@@ -1126,9 +838,8 @@ const Canvas = forwardRef(function Canvas(
             />
           </Layer>
         </Stage>
-      </div>
 
-      <Player url={url} ref={videoRef} parentref={canvasParentRef} hidden />
+      </div>
       <TransparentVideoController
         playerRef={videoRef}
         dimensions={dimensions}
@@ -1136,6 +847,6 @@ const Canvas = forwardRef(function Canvas(
       />
     </>
   );
-});
+};
 
 export default Canvas;

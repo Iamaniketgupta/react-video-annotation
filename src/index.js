@@ -1,3 +1,3 @@
-import TwoDVideoAnnotation from './app/index';
+import {TwoDVideoAnnotation,CanvasProvider} from './app/index';
 
-export default TwoDVideoAnnotation;
+export  {TwoDVideoAnnotation,CanvasProvider};
