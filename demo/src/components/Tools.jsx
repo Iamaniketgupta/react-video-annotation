@@ -1,15 +1,7 @@
 import { FaUndo, FaRedo, FaTrash, FaGithub } from "react-icons/fa";
-export default function Tools({ playertools}) {
+export default function Tools({ handleUndo, handleRedo, handleDeleteShape }) {
 
-    const undo = () => {
-        playertools.current?.undo()
-    }
-    const redo = () => {
-        playertools.current?.redo()
-    }
-    const deleteShape = () => {
-        playertools.current?.deleteShape()
-    }
+
 
     return (
         <>
@@ -23,21 +15,21 @@ export default function Tools({ playertools}) {
             <div className="flex items-center gap-4">
                 {/* Undo Button */}
                 <button
-                    onClick={undo}
+                    onClick={handleUndo}
                     title="Undo or CTRL+Z"
                     className="text-white bg-stone-700 hover:bg-stone-600 p-2 rounded-full transition">
                     <FaUndo size={18} />
                 </button>
                 {/* Redo Button */}
                 <button
-                    onClick={redo}
+                    onClick={handleRedo}
                     title="Redo or CTRL+Y"
                     className="text-white bg-stone-700 hover:bg-stone-600 p-2 rounded-full transition">
                     <FaRedo size={18} />
                 </button>
                 {/* Delete Button */}
                 <button
-                    onClick={deleteShape}
+                    onClick={handleDeleteShape}
                     title="Delete or delete key"
                     className="text-white bg-red-700 hover:bg-red-600 p-2 rounded-full transition">
                     <FaTrash size={18} />

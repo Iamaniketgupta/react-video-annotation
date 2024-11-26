@@ -1,2 +1,3 @@
 import TwoDVideoAnnotation from "./TwoDVideoAnnotation"
-export default TwoDVideoAnnotation  
+
+export  {TwoDVideoAnnotation}
