@@ -1,6 +1,5 @@
 import { FaUndo, FaRedo, FaTrash, FaGithub } from "react-icons/fa";
-export default function Tools({ handleUndo, handleRedo, handleDeleteShape }) {
-
+export default function Tools({ annotationRef }) {
 
 
     return (
@@ -15,21 +14,21 @@ export default function Tools({ handleUndo, handleRedo, handleDeleteShape }) {
             <div className="flex items-center gap-4">
                 {/* Undo Button */}
                 <button
-                    onClick={handleUndo}
+                    onClick={annotationRef.current?.undo}
                     title="Undo or CTRL+Z"
                     className="text-white bg-stone-700 hover:bg-stone-600 p-2 rounded-full transition">
                     <FaUndo size={18} />
                 </button>
                 {/* Redo Button */}
                 <button
-                    onClick={handleRedo}
+                    onClick={annotationRef.current?.redo}
                     title="Redo or CTRL+Y"
                     className="text-white bg-stone-700 hover:bg-stone-600 p-2 rounded-full transition">
                     <FaRedo size={18} />
                 </button>
                 {/* Delete Button */}
                 <button
-                    onClick={handleDeleteShape}
+                    onClick={annotationRef.current?.deleteShape}
                     title="Delete or delete key"
                     className="text-white bg-red-700 hover:bg-red-600 p-2 rounded-full transition">
                     <FaTrash size={18} />

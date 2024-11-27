@@ -3,6 +3,8 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  forwardRef,
+  useImperativeHandle,
 
 } from "react";
 import {
@@ -23,23 +25,20 @@ import { LineShape } from "../shapes/Line";
 import { CircleShape } from "../shapes/Circle";
 import { Rectangle } from "../shapes/Rectangle";
 
-const Canvas = (
+const Canvas = forwardRef((
   {
     children,
     url,
     selectedShapeTool,
     hideAnnotations,
     lockEdit,
-    initialData,
     annotationColor,
     opacity,
     strokeWidth,
     selectedAnnotationData,
     videoControls,
-    onUndo,
-    onRedo,
-    onDeleteShape
-  }
+
+  }, ref
 
 ) => {
 
@@ -93,11 +92,18 @@ const Canvas = (
     if (selectedAnnotationData && selectedShapeId) {
       const selectedData = shapes.find((shape) => shape.id === selectedShapeId);
       selectedAnnotationData(selectedData);
+    }else{
+      selectedAnnotationData(null);
     }
 
   }, [selectedShapeId, shapes, selectedAnnotationData]);
 
- 
+  useImperativeHandle(ref, () => ({
+    undo,
+    redo,
+    deleteShape
+  }));
+
 
 
   // ============================================================================
@@ -275,7 +281,7 @@ const Canvas = (
 
     setNewShape(updatedShape);
   }, 100);
-  console.log(shapes)
+
   /**
    * Handle mouse up event to finalize drawing and add the shape to the state.
    *
@@ -592,7 +598,7 @@ const Canvas = (
           // backgroundColor: "red",
         }}
       >
-        <Player url={url} {...videoControls} ref={videoRef} dimensions={imagedim} parentref={canvasParentRef} />
+        <Player url={url} videoControls={videoControls} ref={videoRef} dimensions={imagedim} parentref={canvasParentRef} />
 
         <Stage
           ref={stageRef}
@@ -828,6 +834,6 @@ const Canvas = (
       />
     </>
   );
-};
+});
 
 export default Canvas;
