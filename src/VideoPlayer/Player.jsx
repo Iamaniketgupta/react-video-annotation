@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 
 const Player = forwardRef(function VideoElem(props, ref) {
+    const videoControls= props.videoControls;
     const playerRef = useRef();
     useEffect(() => {
         if (!playerRef) return;
@@ -29,7 +30,7 @@ const Player = forwardRef(function VideoElem(props, ref) {
         left: 0,
         width: props.dimensions.width, 
         height: props.dimensions.height, 
-    }} ref={playerRef} {...props} preload='auto' controls={false}  />;
+    }} ref={playerRef} {...videoControls} preload='auto' controls={false}  />;
 });
 export default Player;
 
