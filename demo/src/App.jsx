@@ -25,6 +25,10 @@ function App() {
   const [annotationColor, setAnnotationColor] = useState("red");
   const [annotationData, setAnnotationData] = useState(null);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37d1a1afa6247565cb1de20e3daa185f7190382d
   const annotationRef = useRef(null);  // use ref to access the undo,redo and deleteShape functions
 
   const handleSelectAnnotationData = (data) => {
