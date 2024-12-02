@@ -122,7 +122,7 @@ const Canvas = forwardRef((
     const cursor = window.getComputedStyle(document.body).cursor;
       
       if (cursor === "nwse-resize") return;
-      console.log(selectedShapeTool)
+      // console.log(selectedShapeTool)
       if (selectedShapeTool !== "rectangle" && selectedShapeTool !== "circle" && selectedShapeTool !== "line") {
         console.warning("Kindly Select appropriate tool which can only include line rectangle and circle");
         return;
