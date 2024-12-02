@@ -5,7 +5,7 @@ import Tools from "./components/Tools";
 import { CiSettings } from "react-icons/ci";
 import DataForm from "./components/DataForm";
 import AnnotationsList from "./components/AnnotationsList";
-import { TwoDVideoAnnotation } from "../../src/app";
+import { TwoDVideoAnnotation } from "react-video-annotation-tool";
 
 
 // Example to access video controls

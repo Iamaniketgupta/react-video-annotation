@@ -1,3 +1,3 @@
-import {TwoDVideoAnnotation,CanvasProvider} from './app/index';
+import {TwoDVideoAnnotation} from './app/index';
 
-export  {TwoDVideoAnnotation,CanvasProvider};
+export  {TwoDVideoAnnotation};
