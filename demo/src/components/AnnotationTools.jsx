@@ -2,8 +2,8 @@ import { useState } from "react";
 import { FaMousePointer, FaRegSquare, FaRegCircle, FaSlash } from "react-icons/fa";
 
 const basicColors = [
-  { name: "White", value: "#ffffff" },
   { name: "Red", value: "#ff0000" },
+  { name: "White", value: "#ffffff" },
   { name: "Green", value: "#00ff00" },
   { name: "Blue", value: "#0000ff" },
   { name: "Yellow", value: "#ffff00" },
@@ -61,7 +61,7 @@ function AnnotationTools({ selectedTool, setSelectedTool, annotationColor, setAn
               className="bg-stone-800 outline-none text-white text-xs p-2 rounded-lg cursor-pointer"
             >
               {basicColors.map((color) => (
-                <option key={color.value} value={color.value} className="bg-stone-800">
+                <option key={color.value}  value={color.value} className="bg-stone-800">
                   {color.name}
                 </option>
               ))}
