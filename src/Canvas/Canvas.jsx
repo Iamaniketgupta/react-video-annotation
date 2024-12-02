@@ -118,6 +118,10 @@ const Canvas = forwardRef((
   const handleMouseDown = useCallback(
     (e) => {
       if (isFullScreen) return;
+      
+    const cursor = window.getComputedStyle(document.body).cursor;
+      
+      if (cursor === "nwse-resize") return;
       console.log(selectedShapeTool)
       if (selectedShapeTool !== "rectangle" && selectedShapeTool !== "circle" && selectedShapeTool !== "line") {
         console.warning("Kindly Select appropriate tool which can only include line rectangle and circle");
@@ -330,6 +334,9 @@ const Canvas = forwardRef((
    * @param {Object} e - The event object.
    */
   const handleDragStart = (e) => {
+    
+    setHistory((prevHistory) => [...prevHistory, shapes]);
+    setRedoStack([]);
     e.target.getStage().container().style.cursor = "move";
   };
 
@@ -365,12 +372,16 @@ const Canvas = forwardRef((
    */
 
   const handleTransformStart = useCallback(() => {
+    
+    document.body.style.cursor = 'nwse-resize';     
     setHistory((prevHistory) => [...prevHistory, shapes]);
     setRedoStack([]);
   }, [shapes]);
 
   const handleTransformEnd = useCallback(
     (e, shapeId) => {
+      
+      document.body.style.cursor = 'auto';
       const node = e.target;
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
