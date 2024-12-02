@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import React,{ forwardRef } from "react";
 import { Rect } from "react-konva";
 
 export const Rectangle = forwardRef(

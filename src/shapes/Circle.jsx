@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import React,{ forwardRef } from "react";
 import { Circle } from "react-konva";
 
 export const CircleShape = forwardRef(

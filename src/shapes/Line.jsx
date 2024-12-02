@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import React,{ forwardRef } from "react";
 import { Line } from "react-konva";
 
 export const LineShape = forwardRef(
