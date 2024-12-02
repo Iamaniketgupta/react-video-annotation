@@ -54,8 +54,7 @@
     "lodash": "^4.17.21",
     "prop-types": "^15.8.1",
     "react-icons": "^5.3.0",
-    "react-konva": "^18.2.10",
-    "react-video-annotation-tool": "file:"
+    "react-konva": "^18.2.10"
   },
   "peerDependencies": {
     "react": "^18.3.1",
