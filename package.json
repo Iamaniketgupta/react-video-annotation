@@ -20,28 +20,29 @@
     "type": "git",
     "url": "git+https://github.com/iamaniketgupta/react-video-annotation.git"
   },
-  "keywords": [
-    "react",
-    "react-annotation",
-    "react-video-annotation",
-    "video-annotation",
-    "annotation-tool",
-    "media-annotation",
-    "video-editing",
-    "annotation-library",
-    "react-player",
-    "videojs",
-    "interactive-video",
-    "media-markup",
-    "video-tagging",
-    "annotation-plugin",
-    "media-tagging",
-    "annotation-framework",
-    "react-video-tools",
-    "video-annotations-ui",
-    "annotorious",
-    "annotation-software"
-  ],
+  
+ "keywords": [
+  "react",
+  "react-annotation",
+  "react-video-annotation",
+  "video-annotation",
+  "annotation-tool",
+  "media-annotation",
+  "video-editing",
+  "annotation-library",
+  "react-player",
+  "videojs",
+  "interactive-video",
+  "media-markup",
+  "video-tagging",
+  "annotation-plugin",
+  "media-tagging",
+  "annotation-framework",
+  "react-video-tools",
+  "video-annotations-ui",
+  "annotorious",
+  "annotation-software"
+],
   "author": "Aniket Gupta, Suraj Singh",
   "license": "MIT",
   "bugs": {
@@ -76,6 +77,7 @@
   "peerDependencies": {
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
+    "prop-types": "^15.8.1",
     "react-dom": "^18.3.1"
   }
 }
