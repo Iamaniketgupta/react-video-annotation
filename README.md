@@ -16,10 +16,9 @@
 
 ---
 
-
 ### Preview
 
-![React Video Annotation Tool Preview]([(https://res.cloudinary.com/surajgsn/image/upload/v1733140148/rnfokhwh2zgyoqalpzqq.png)])
+![React Video Annotation Tool Preview](https://res.cloudinary.com/surajgsn/image/upload/v1733140148/rnfokhwh2zgyoqalpzqq.png)
 
 ---
 
