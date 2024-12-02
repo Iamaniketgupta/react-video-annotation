@@ -130,7 +130,7 @@ const Canvas = forwardRef((
       const stage = e.target.getStage();
       if (!stage) return;
       const { x, y } = stage.getPointerPosition();
-      console.log({ x, y });
+     // console.log({ x, y });
 
       const startTime = currentTime;
       let shapeProperties;
