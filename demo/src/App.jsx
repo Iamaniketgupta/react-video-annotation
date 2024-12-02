@@ -6,37 +6,41 @@ import { CiSettings } from "react-icons/ci";
 import DataForm from "./components/DataForm";
 import AnnotationsList from "./components/AnnotationsList";
 import { TwoDVideoAnnotation } from "../../src/app";
+
+
+// Example to access video controls
+const videoControls = {
+  // autoPlay: true,
+  // loop: true
+  
+}
+
 function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedTool, setSelectedTool] = useState(null);
-  const [allAnnotations, setAllAnnotations] = useState([]);  //it can have initialData as well from database
+
+  // Very important to pass the state
+  const [allAnnotations, setAllAnnotations] = useState([]);  // it can have initialData as well from database
+
   const [annotationColor, setAnnotationColor] = useState("red");
   const [annotationData, setAnnotationData] = useState(null);
 
+  const annotationRef = useRef(null);  // use ref to access the undo,redo and deleteShape functions
 
-  
   const handleSelectAnnotationData = (data) => {
     setAnnotationData(data);
- 
-  };
-const handleUndo = (callback) => {
-  console.log("UNDO CaLLback")
-  // callback()
-}
-const handleRedo = (callback) => {
-  console.dir(callback)
-}
-const handleDeleteShape = (callback) => {
-  console.dir(callback)
-}
 
+  };
+
+
+  console.log(allAnnotations)
 
   return (
     <div className="w-screen h-screen bg-stone-900 overflow-hidden flex flex-col">
 
       {/* Tools */}
       <div className=" rounded-full mt-2 py-2 flex items-center justify-between w-[95%]  mx-auto h-14 bg-stone-800 px-4 shadow-md">
-        <Tools handleUndo={handleUndo} handleRedo={handleRedo} handleDeleteShape={handleDeleteShape} />
+        <Tools annotationRef={annotationRef} />
       </div>
 
       <div className="flex flex-row gap-3  p-4 overflow-y-auto">
@@ -45,15 +49,17 @@ const handleDeleteShape = (callback) => {
           <div className="w-[90%] mx-auto ">
 
             <TwoDVideoAnnotation
-
+              rootRef={annotationRef}
+              shapes={allAnnotations}
+              setShapes={setAllAnnotations}
               videoUrl="https://videos.pexels.com/video-files/6804117/6804117-sd_960_506_25fps.mp4"
               selectedShapeTool={selectedTool}
               hideAnnotations={false}
               annotationColor={annotationColor}
+              videoControls={videoControls}
               lockEdit={false}
               initialAnnotationData={annotationData}
               selectedAnnotationData={(data) => handleSelectAnnotationData(data)}
-              // onUndo ={(callback) => handleUndo(callback)}
             />
           </div>
         </div>
@@ -89,7 +95,7 @@ const handleDeleteShape = (callback) => {
                 <DataForm annotationData={annotationData} setAllAnnotations={setAllAnnotations} />
 
                 {/* Annotation List */}
-                <AnnotationsList allAnnotations={allAnnotations || []} />
+                <AnnotationsList annotationRef={annotationRef} allAnnotations={allAnnotations} />
 
               </>
           }

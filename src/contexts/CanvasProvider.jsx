@@ -2,9 +2,9 @@ import { createContext, useCallback, useContext, useState } from "react";
 
 const CanvasContext = createContext();
 
-export const CanvasProvider = ({ children, initialData }) => {
+export const CanvasProvider = ({ children,shapes, setShapes }) => {
     // GENERAL STATES
-    const [shapes, setShapes] = useState(initialData || []);
+    // const [shapes, setShapes] = useState(initialData || []);
     const [isDrawing, setIsDrawing] = useState(false);
     const [newShape, setNewShape] = useState(null);
     const [selectedShapeId, setSelectedShapeId] = useState(null);
