@@ -89,14 +89,16 @@ const Canvas = forwardRef((
 
   //  =================== Exported Handlers ===================================
   useEffect(() => {
-    if (selectedAnnotationData && selectedShapeId) {
-      const selectedData = shapes.find((shape) => shape.id === selectedShapeId);
-      selectedAnnotationData(selectedData);
-    }else{
-      selectedAnnotationData(null);
+    if (typeof selectedAnnotationData === 'function') {
+      if (selectedShapeId) {
+        const selectedData = shapes.find((shape) => shape.id === selectedShapeId);
+        selectedAnnotationData(selectedData);
+      } else {
+        selectedAnnotationData(null);
+      }
     }
-
   }, [selectedShapeId, shapes, selectedAnnotationData]);
+  
 
   useImperativeHandle(ref, () => ({
     undo,
