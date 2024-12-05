@@ -74,6 +74,7 @@ function App() {
         rootRef={annotationRef}
         shapes={allAnnotations}
         setShapes={setAllAnnotations}
+        selectedShapeTool={"rectangle"} 
         videoUrl="https://videos.pexels.com/video-files/6804117/6804117-sd_960_506_25fps.mp4"
       />
     </div>
