@@ -177,8 +177,8 @@ const initialShapes = [
 
 ### Developers
 
--  [Aniket Gupta](mailto:aniketgupta@example.com)  
--  [Suraj Singh](mailto:surajgsn07@example.com)
+-  [Aniket Gupta](mailto:iamaniketgupta1245@gmail.com)  
+-  [Suraj Singh](mailto:surajgsn07@gmail.com)
 
 ---
 
