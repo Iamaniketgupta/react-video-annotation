@@ -53,8 +53,8 @@ export const CanvasProvider = ({ children,shapes, setShapes }) => {
       */
     const deleteShape = useCallback(() => {
         
-      setHistory((prevHistory) => [...prevHistory, shapes]);
-      setRedoStack([]);
+        setHistory((prevHistory) => [...prevHistory, shapes]);
+        setRedoStack([]);
         setShapes((prevShapes) =>
             prevShapes.filter((shape) => shape.id !== selectedShapeId)
         );
