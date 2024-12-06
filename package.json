@@ -1,6 +1,6 @@
 {
   "name": "react-video-annotation-tool",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "A React-based video player with built-in annotation features, enabling interactive video tagging and markup for seamless media annotation workflows",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -73,8 +73,8 @@
     "react-konva": "^18.2.10"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
     "prop-types": "^15.8.1",
+    "react": "^18.3.1",
     "react-dom": "^18.3.1"
   }
 }

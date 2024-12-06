@@ -57,7 +57,8 @@ TwoDVideoAnnotation.propTypes = {
   shapes: PropTypes.arrayOf(PropTypes.object).isRequired,
   setShapes: PropTypes.func.isRequired,
   annotationColor: PropTypes.string,
-  videoControls: PropTypes.object
+  videoControls: PropTypes.object,
+  selectedAnnotationData: PropTypes.func
 };
 
 export default TwoDVideoAnnotation;

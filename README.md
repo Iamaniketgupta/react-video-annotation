@@ -74,6 +74,7 @@ function App() {
         rootRef={annotationRef}
         shapes={allAnnotations}
         setShapes={setAllAnnotations}
+        selectedShapeTool={"rectangle"} 
         videoUrl="https://videos.pexels.com/video-files/6804117/6804117-sd_960_506_25fps.mp4"
       />
     </div>
@@ -176,8 +177,8 @@ const initialShapes = [
 
 ### Developers
 
--  [Aniket Gupta](mailto:aniketgupta@example.com)  
--  [Suraj Singh](mailto:surajgsn07@example.com)
+-  [Aniket Gupta](mailto:iamaniketgupta1245@gmail.com)  
+-  [Suraj Singh](mailto:surajgsn07@gmail.com)
 
 ---
 
