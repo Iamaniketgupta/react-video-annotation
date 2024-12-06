@@ -52,6 +52,9 @@ export const CanvasProvider = ({ children,shapes, setShapes }) => {
       * @param {string} shapeId - The ID of the shape to delete.
       */
     const deleteShape = useCallback(() => {
+        
+      setHistory((prevHistory) => [...prevHistory, shapes]);
+      setRedoStack([]);
         setShapes((prevShapes) =>
             prevShapes.filter((shape) => shape.id !== selectedShapeId)
         );
