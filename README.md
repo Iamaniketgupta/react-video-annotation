@@ -16,6 +16,15 @@
 
 ---
 
+
+
+- ### Keyboard Shortcuts for Improved Productivity
+
+- **Ctrl + Z**: Undo the last action.  
+- **Ctrl + Y**: Redo the undone action.  
+- **Delete Button**: Remove selected shapes.
+---
+
 ### Preview
 
 ![React Video Annotation Tool Preview](https://res.cloudinary.com/surajgsn/image/upload/v1733140148/rnfokhwh2zgyoqalpzqq.png)
