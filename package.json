@@ -1,6 +1,6 @@
 {
   "name": "react-video-annotation-tool",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A React-based video player with built-in annotation features, enabling interactive video tagging and markup for seamless media annotation workflows",
   "main": "dist/index.js",
   "module": "dist/index.js",
