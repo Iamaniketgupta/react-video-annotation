@@ -1,6 +1,4 @@
 
----
-
 # React Video Annotation Tool
 
 **React Video Annotation Tool** is a flexible and intuitive library to add annotations on videos in real-time. It supports a wide range of features including shape tools, annotation lists, undo/redo functionality, and more.
@@ -15,8 +13,6 @@
 - Responsive and styled UI for modern web apps.
 
 ---
-
-
 
 - ### Keyboard Shortcuts for Improved Productivity
 
@@ -195,4 +191,4 @@ const initialShapes = [
 
 This library is available under the [MIT License](https://opensource.org/licenses/MIT). 
 
----
+
